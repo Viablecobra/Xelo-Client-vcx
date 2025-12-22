@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
 
-    private enum SliderMode { SIZE, OPACITY }
+    private enum SliderMode { SIZE, OPACITY, LOCK }
 
     private View lastSelectedButton;
     private View sliderContainer;
@@ -75,6 +75,7 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
         Button doneButton = findViewById(R.id.done_button);
         Button sizeButton = findViewById(R.id.size_button);
         Button opacityButton = findViewById(R.id.opacity_button);
+        Button lockButton = findViewById(R.id.lock_button);
         FrameLayout grid = findViewById(R.id.inbuilt_buttons_grid);
         sliderContainer = findViewById(R.id.slider_container);
         sizeSeekBar = findViewById(R.id.size_seekbar);
@@ -169,10 +170,13 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                     lp.height = sizePx;
                     lastSelectedButton.setLayoutParams(lp);
                     modSizes.put(lastSelectedId, sizeDp);
-                } else {
+                } else if (currentMode == SliderMode.OPACITY) {
                     int opacity = clampOpacity(MIN_OPACITY + progress);
                     lastSelectedButton.setAlpha(opacity / 100f);
                     modOpacity.put(lastSelectedId, opacity);
+                } else if (currentMode == SliderMode.LOCK) {
+                    boolean locked = progress > 0;
+                    InbuiltModSizeStore.getInstance().setLocked(lastSelectedId, locked);
                 }
             }
 
@@ -200,6 +204,17 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 int range = MAX_OPACITY - MIN_OPACITY;
                 sizeSeekBar.setMax(range);
                 sizeSeekBar.setProgress(opacity - MIN_OPACITY);
+                sliderContainer.setVisibility(View.VISIBLE);
+            }
+        });
+
+        lockButton.setOnClickListener(v -> {
+            currentMode = SliderMode.LOCK;
+            sliderLabel.setText("Lock");
+            if (lastSelectedId != null) {
+                boolean isLocked = InbuiltModSizeStore.getInstance().isLocked(lastSelectedId);
+                sizeSeekBar.setMax(1);
+                sizeSeekBar.setProgress(isLocked ? 1 : 0);
                 sliderContainer.setVisibility(View.VISIBLE);
             }
         });
@@ -252,13 +267,18 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 sliderLabel.setText("Size");
                 sizeSeekBar.setMax(100);
                 sizeSeekBar.setProgress(sizeToProgress(sizeDp));
-            } else {
+            } else if (currentMode == SliderMode.OPACITY) {
                 sliderLabel.setText("Opacity");
                 int opacity = modOpacity.getOrDefault(id, DEFAULT_OPACITY);
                 opacity = clampOpacity(opacity);
                 int range = MAX_OPACITY - MIN_OPACITY;
                 sizeSeekBar.setMax(range);
                 sizeSeekBar.setProgress(opacity - MIN_OPACITY);
+            } else if (currentMode == SliderMode.LOCK) {
+                sliderLabel.setText("Lock");
+                boolean isLocked = InbuiltModSizeStore.getInstance().isLocked(id);
+                sizeSeekBar.setMax(1);
+                sizeSeekBar.setProgress(isLocked ? 1 : 0);
             }
             sliderContainer.setVisibility(View.VISIBLE);
         });

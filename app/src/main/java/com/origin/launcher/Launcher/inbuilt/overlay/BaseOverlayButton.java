@@ -148,6 +148,9 @@ public abstract class BaseOverlayButton {
     private boolean handleTouch(View v, MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+                    return false;
+                }
                 initialX = wmParams.x;
                 initialY = wmParams.y;
                 initialTouchX = event.getRawX();
@@ -157,6 +160,9 @@ public abstract class BaseOverlayButton {
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
             case MotionEvent.ACTION_MOVE:
+                if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+                    return true;
+                }
                 float dx = event.getRawX() - initialTouchX;
                 float dy = event.getRawY() - initialTouchY;
                 if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
@@ -195,6 +201,9 @@ public abstract class BaseOverlayButton {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) overlayView.getLayoutParams();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+                    return false;
+                }
                 initialX = params.leftMargin;
                 initialY = params.topMargin;
                 initialTouchX = event.getRawX();
@@ -204,6 +213,9 @@ public abstract class BaseOverlayButton {
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
             case MotionEvent.ACTION_MOVE:
+                if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+                    return true;
+                }
                 float dx = event.getRawX() - initialTouchX;
                 float dy = event.getRawY() - initialTouchY;
                 if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
