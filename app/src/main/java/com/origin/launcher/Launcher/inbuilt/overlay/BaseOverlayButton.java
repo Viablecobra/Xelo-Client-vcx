@@ -42,6 +42,7 @@ public abstract class BaseOverlayButton {
     public BaseOverlayButton(Activity activity) {
         this.activity = activity;
         this.windowManager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+        InbuiltModSizeStore.getInstance().init(activity.getApplicationContext());
     }
 
     protected int getButtonSizePx() {
@@ -59,6 +60,9 @@ public abstract class BaseOverlayButton {
 
     public void show(int startX, int startY) {
         if (isShowing) return;
+        if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+            return;
+        }
         handler.postDelayed(() -> showInternal(startX, startY), 500);
     }
 
@@ -100,6 +104,9 @@ public abstract class BaseOverlayButton {
 
     private void showFallback(int startX, int startY) {
         if (isShowing) return;
+        if (InbuiltModSizeStore.getInstance().isLocked(getModId())) {
+            return;
+        }
         ViewGroup rootView = activity.findViewById(android.R.id.content);
         if (rootView == null) return;
 
