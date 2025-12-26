@@ -22,7 +22,8 @@ import android.util.Log;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import com.origin.launcher.R;
 import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModManager;
@@ -67,6 +68,20 @@ public abstract class BaseOverlayButton {
         return opacity / 100f;
     }
     
+    private String readFileToString(File file) throws IOException {
+    int length = (int) file.length();
+    byte[] bytes = new byte[length];
+    try (FileInputStream fis = new FileInputStream(file)) {
+        fis.read(bytes);
+    }
+    return new String(bytes, "UTF-8");
+}
+private void writeStringToFile(File file, String content) throws IOException {
+    try (FileOutputStream fos = new FileOutputStream(file)) {
+        fos.write(content.getBytes("UTF-8"));
+    }
+}
+    
     private void applyButtonColorsFromConfig(ImageButton button) {
     try {
         File configDir = new File("/storage/emulated/0/games/xelo_client/toon");
@@ -77,7 +92,7 @@ public abstract class BaseOverlayButton {
             createDefaultToonConfig(toonFile);
         }
         
-        String toonText = Files.readString(toonFile.toPath()).trim();
+        String toonText = readFileToString(toonFile).trim();
         JSONObject overlayCfg;
         if (toonText.startsWith("{")) {
             JSONObject config = new JSONObject(toonText);
@@ -106,7 +121,7 @@ private void createDefaultToonConfig(File toonFile) throws IOException {
             "stroke": "#000000"
         }
         """;
-    Files.writeString(toonFile.toPath(), defaultConfig);
+    writeStringToFile(toonFile, defaultConfig);
 }
 
     protected abstract String getModId();
