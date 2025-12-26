@@ -18,6 +18,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import com.origin.launcher.MouseInjector;
 
 public class MinecraftLauncher {
     private static final String TAG = "MinecraftLauncher";
@@ -147,8 +148,14 @@ public class MinecraftLauncher {
                     gameManager.loadLibrary("minecraftpe");
                     gameManager.loadLibrary("xelo");
                     gameManager.loadLibrary("mtbinloader2");
+                    gameManager.loadLibrary("MaK");
                 }
                 ModNativeLoader.loadEnabledSoMods(ModManager.getInstance(), context.getCacheDir());
+                try {
+    System.loadLibrary("MaK");
+} catch (UnsatisfiedLinkError e) {
+    Log.w(TAG, "MaK library failed to load: " + e.getMessage());
+}
 
                 activity.runOnUiThread(() -> {
                     dismissLoading();
