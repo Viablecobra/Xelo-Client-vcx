@@ -4,6 +4,7 @@ import android.hardware.input.InputManager;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.os.Build;
 
 public class MouseInjector {
     private static InputManager inputManager;
@@ -17,8 +18,6 @@ public class MouseInjector {
         }
     }
     
-    public static native void onTouchDelta(float dx, float dy);
-    
     public static void injectMouseMove(float dx, float dy) {
         if (inputManager == null) return;
         
@@ -26,7 +25,15 @@ public class MouseInjector {
         MotionEvent event = MotionEvent.obtain(now, now, 
             MotionEvent.ACTION_HOVER_MOVE, dx * 0.5f, dy * 0.5f, 0);
         event.setSource(InputDevice.SOURCE_MOUSE);
-        inputManager.injectInputEvent(event, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+        
+        int mode = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mode = InputManager.INJECT_INPUT_EVENT_MODE_ASYNC;
+        } else {
+            mode = 2;
+        }
+        
+        inputManager.injectInputEvent(event, mode);
         event.recycle();
     }
 }
