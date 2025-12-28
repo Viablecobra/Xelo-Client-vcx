@@ -87,6 +87,7 @@ private static final int REQ_STORAGE_PERMS = 100;
         InbuiltModSizeStore.getInstance().init(getApplicationContext());
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         createNoMediaFile();
+        ensureToonConfigExists();
 
         
         ThemeUtils.applyThemeToBottomNavigation(bottomNavigationView);
