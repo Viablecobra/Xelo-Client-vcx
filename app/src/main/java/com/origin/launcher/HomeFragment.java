@@ -52,6 +52,18 @@ import com.origin.launcher.ThemeManager;
 import com.origin.launcher.ThemeUtils;
 import android.util.Log;
 import android.widget.Toast;
+import com.origin.launcher.MainActivity;
+import com.origin.launcher.Launcher.MinecraftLauncher;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.origin.launcher.versions.VersionManager;
+import java.util.concurrent.ExecutorService;
+import android.view.MotionEvent;
+import android.content.Context;
+import com.origin.launcher.FeatureSettings;
+import com.origin.launcher.ResourcepackHandler;
+import com.origin.launcher.versions.GameVersion;
+import android.app.Activity;
 
 public class HomeFragment extends BaseThemedFragment {
 
@@ -60,32 +72,95 @@ public class HomeFragment extends BaseThemedFragment {
     private Button mbl2_button;
     private Button versions_button;
     private com.google.android.material.button.MaterialButton shareLogsButton;
+    private MinecraftLauncher minecraftLauncher;
+    private VersionManager versionManager;
+    
+
+    
+private void launchGame() {
+    if (mbl2_button == null) return;
+    
+    mbl2_button.setEnabled(false);
+
+    GameVersion version = versionManager != null ? versionManager.getSelectedVersion() : null;
+
+    if (version == null) {
+        mbl2_button.setEnabled(true);
+        showErrorDialog("No Version", "Please select a Minecraft version first.");
+        return;
+    }
+
+    if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
+        mbl2_button.setEnabled(true);
+        showVersionIsolationDialog();
+        return;
+    }
+    
+    new Thread(() -> {
+        try {
+            minecraftLauncher.launch(requireActivity().getIntent(), version);
+            requireActivity().runOnUiThread(() -> {
+                mbl2_button.setEnabled(true);
+                if (listener != null) listener.setText("Minecraft launched successfully");
+            });
+        } catch (Exception e) {
+            requireActivity().runOnUiThread(() -> {
+                mbl2_button.setEnabled(true);
+                showErrorDialog("Launch Failed", e.getMessage());
+            });
+        }
+    }).start();
+}
+
+private void showErrorDialog(String title, String message) {
+    new AlertDialog.Builder(requireContext())
+        .setTitle(title)
+        .setMessage(message)
+        .setPositiveButton("OK", null)
+        .show();
+}
+
+private void showVersionIsolationDialog() {
+    new AlertDialog.Builder(requireContext())
+        .setTitle("Version Isolation Required")
+        .setMessage("Enable version isolation to launch uninstalled versions?")
+        .setPositiveButton("Enable", (dialog, which) -> {
+            FeatureSettings.getInstance().setVersionIsolationEnabled(true);
+            launchGame();
+        })
+        .setNegativeButton("Cancel", null)
+        .show();
+}
+
+private void setupManagersAndHandlers() {
+    versionManager = VersionManager.get(requireContext());
+    versionManager.loadAllVersions();
+    minecraftLauncher = new MinecraftLauncher(requireContext());
+}
+
+private void checkResourcepack() {
+    if (getActivity() == null) return;
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    new ResourcepackHandler((Activity) getActivity(), minecraftLauncher, executorService)
+        .checkIntentForResourcepack();
+}
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        
+
         listener = view.findViewById(R.id.listener);
         mbl2_button = view.findViewById(R.id.mbl2_load);
         versions_button = view.findViewById(R.id.versions_button);
         shareLogsButton = view.findViewById(R.id.share_logs_button);
         Handler handler = new Handler(Looper.getMainLooper());
-        
+
         // Apply initial theme
         applyInitialTheme(view);
         
-        mbl2_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mbl2_button.setEnabled(false);
-                listener.setText("Starting Minecraft launcher...");
-                
-                // Get package name from settings
-                String packageName = getPackageNameFromSettings();
-                startLauncher(handler, listener, "launcher_mbl2.dex", packageName);
-            }
-        });
-        
+        mbl2_button.setOnClickListener(v -> launchGame());
+
         // Long press to clear APK selection
         mbl2_button.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -94,7 +169,7 @@ public class HomeFragment extends BaseThemedFragment {
                 return true;
             }
         });
-        
+
         versions_button.setOnClickListener(v -> {
             try {
                 requireActivity().getSupportFragmentManager()
@@ -105,23 +180,23 @@ public class HomeFragment extends BaseThemedFragment {
                         R.anim.slide_in_left,   
                         R.anim.slide_out_left 
                     )
-                    .replace(android.R.id.content, new VersionsFragment())
+                    .replace(R.id.fragment_container, new VersionsFragment())
                     .addToBackStack(null)
                     .commit();
-                
+
                 Log.d(TAG, "Opening themes fragment");
             } catch (Exception e) {
                 Log.e(TAG, "Error opening themes", e);
                 Toast.makeText(getContext(), "Unable to open themes", Toast.LENGTH_SHORT).show();
             }
         });
-        
+
         // Set initial log text
         listener.setText("Ready to launch Minecraft");
-        
+
         // Show current selection status
         updateSelectionStatus();
-        
+
         // Set up share button
         shareLogsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,10 +204,26 @@ public class HomeFragment extends BaseThemedFragment {
                 shareLogs();
             }
         });
-        
+
         return view;
     }
     
+@Override
+public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    setupManagersAndHandlers();
+    checkResourcepack();
+}
+
+@Override
+public void onDestroyView() {
+    super.onDestroyView();
+    listener = null;
+    mbl2_button = null;
+    versions_button = null;
+    shareLogsButton = null;
+}
+
     /**
      * Apply initial theme to all views
      */
@@ -144,7 +235,7 @@ public class HomeFragment extends BaseThemedFragment {
                 if (mbl2_button instanceof MaterialButton) {
                     ThemeUtils.applyThemeToButton((MaterialButton) mbl2_button, requireContext());
                 }
-                
+
                 // Apply theme to share button (remove background, make it text button)
                 if (shareLogsButton != null) {
                     ThemeUtils.applyThemeToButton(shareLogsButton, requireContext());
@@ -163,7 +254,7 @@ public class HomeFragment extends BaseThemedFragment {
                         vb.setIconTint(ColorStateList.valueOf(themeManager.getColor("onSurfaceVariant")));
                     } catch (Exception ignored) {}
                 }
-                
+
                 // Apply theme to log text area
                 if (listener != null) {
                     listener.setTextColor(themeManager.getColor("onSurfaceVariant"));
@@ -180,11 +271,11 @@ public class HomeFragment extends BaseThemedFragment {
             // Handle error gracefully
         }
     }
-    
+  
     @Override
     protected void onApplyTheme() {
         super.onApplyTheme();
-        
+
         View view = getView();
         if (view != null) {
             // Refresh all theme elements
@@ -223,156 +314,44 @@ public class HomeFragment extends BaseThemedFragment {
         try {
             // Get the current log text
             String logText = listener.getText().toString();
-            
+
             // Create a temporary file
             File logFile = new File(requireContext().getCacheDir(), "latestlog.txt");
             FileWriter writer = new FileWriter(logFile);
             writer.write(logText);
             writer.close();
-            
+
             // Create the sharing intent
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
-            
+
             // Get the file URI using FileProvider
             android.net.Uri fileUri = FileProvider.getUriForFile(
                 requireContext(),
                 "com.origin.launcher.fileprovider",
                 logFile
             );
-            
+
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Xelo Client Logs");
             shareIntent.putExtra(Intent.EXTRA_TEXT, "Xelo Client Latest Logs");
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            
+
             // Start the sharing activity
             startActivity(Intent.createChooser(shareIntent, "Share Logs"));
-            
+
         } catch (Exception e) {
             // Show error message
             android.widget.Toast.makeText(requireContext(), "Failed to share logs: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void startLauncher(Handler handler, TextView listener, String launcherDexName, String mcPackageName) {    
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                // Check if fragment is still attached
-                if (!isAdded()) {
-                    return;
-                }
-                
-                File cacheDexDir = new File(requireActivity().getCodeCacheDir(), "dex");
-                handleCacheCleaning(cacheDexDir, handler, listener);
-                
-                ApplicationInfo mcInfo = null;
-                String selectedApkPath = getSelectedApkPath();
-                
-                if (selectedApkPath != null && new File(selectedApkPath).exists()) {
-                    // Use selected APK instead of installed one
-                    try {
-                        mcInfo = requireActivity().getPackageManager().getApplicationInfo(mcPackageName, PackageManager.GET_META_DATA);
-                        // Override the sourceDir with our selected APK
-                        mcInfo.sourceDir = selectedApkPath;
-                        handler.post(() -> listener.append("\n-> Using selected APK: " + selectedApkPath));
-                    } catch(Exception e) {
-                        handler.post(() -> alertAndExit("Selected APK not found", "The selected APK file is missing or corrupted"));
-                        return;
-                    }
-                } else {
-                    // Use installed APK as fallback
-                    try {
-                        mcInfo = requireActivity().getPackageManager().getApplicationInfo(mcPackageName, PackageManager.GET_META_DATA);
-                        final ApplicationInfo finalMcInfo = mcInfo;
-                        handler.post(() -> listener.append("\n-> Found Minecraft at: " + finalMcInfo.sourceDir));
-                    } catch(Exception e) {
-                        handler.post(() -> alertAndExit("Minecraft cant be found", "Perhaps you dont have it installed?"));
-                        return;
-                    }
-                }
-                
-                Object pathList = getPathList(requireActivity().getClassLoader());
-                processDexFiles(mcInfo, cacheDexDir, pathList, handler, listener, launcherDexName);
-                if (!processNativeLibraries(mcInfo, pathList, handler, listener)) {
-                    return;
-                };
-                
-                handler.post(() -> listener.append("\n-> Launching Minecraft..."));
-                
-                // Final check before launching
-                if (isAdded()) {
-                    launchMinecraft(mcInfo);
-                } else {
-                    handler.post(() -> {
-                        listener.setText("Fragment no longer attached, cannot launch Minecraft");
-                        mbl2_button.setEnabled(true);
-                    });
-                }
-            } catch (Exception e) {
-                String logMessage = e.getCause() != null ? e.getCause().toString() : e.toString();                
-                handler.post(() -> {
-                    listener.setText("Launching failed: " + logMessage);
-                    mbl2_button.setEnabled(true);
-                });                
-            }
-        });    
-    }
-
     @SuppressLint("SetTextI18n")
-    private void handleCacheCleaning(@NotNull File cacheDexDir, Handler handler, TextView listener) {
-        if (cacheDexDir.exists() && cacheDexDir.isDirectory()) {
-            handler.post(() -> listener.setText("-> " + cacheDexDir.getAbsolutePath() + " not empty, do cleaning"));
-            for (File file : Objects.requireNonNull(cacheDexDir.listFiles())) {
-                if (file.delete()) {
-                    handler.post(() -> listener.append("\n-> " + file.getName() + " deleted"));
-                }
-            }
-        } else {
-            handler.post(() -> listener.setText("-> " + cacheDexDir.getAbsolutePath() + " is empty, skip cleaning"));
-        }
-    }
 
     private Object getPathList(@NotNull ClassLoader classLoader) throws Exception {
         Field pathListField = Objects.requireNonNull(classLoader.getClass().getSuperclass()).getDeclaredField("pathList");
         pathListField.setAccessible(true);
         return pathListField.get(classLoader);
-    }
-
-    private void processDexFiles(ApplicationInfo mcInfo, File cacheDexDir, @NotNull Object pathList, @NotNull Handler handler, TextView listener, String launcherDexName) throws Exception {
-        Method addDexPath = pathList.getClass().getDeclaredMethod("addDexPath", String.class, File.class);
-        File launcherDex = new File(cacheDexDir, launcherDexName);
-
-        copyFile(requireActivity().getAssets().open(launcherDexName), launcherDex);
-        handler.post(() -> listener.append("\n-> " + launcherDexName + " copied to " + launcherDex.getAbsolutePath()));
-
-        if (launcherDex.setReadOnly()) {
-            addDexPath.invoke(pathList, launcherDex.getAbsolutePath(), null);
-            handler.post(() -> listener.append("\n-> " + launcherDexName + " added to dex path list"));
-        } else {
-            throw new Exception("Failed to set launcher dex as read-only");
-        }
-        
-        ArrayList<String> copiedDexes = new ArrayList<String>();
-        try (ZipFile zipFile = new ZipFile(mcInfo.sourceDir)) {
-            for (int i = 10; i >= 0; i--) {
-                String dexName = "classes" + (i == 0 ? "" : i) + ".dex";
-                ZipEntry dexFile = zipFile.getEntry(dexName);
-                if (dexFile != null) {
-                    File mcDex = new File(cacheDexDir, dexName);
-                    copyFile(zipFile.getInputStream(dexFile), mcDex);
-                    if (mcDex.setReadOnly()) {
-                        addDexPath.invoke(pathList, mcDex.getAbsolutePath(), null);
-                        copiedDexes.add(dexName);
-                    } else {
-                        handler.post(() -> listener.append("\n-> Warning: Failed to set " + dexName + " as read-only"));
-                    }
-                }
-            }
-        } catch (Throwable th) {
-            handler.post(() -> listener.append("\n-> Warning: Error processing dex files: " + th.getMessage()));
-        }    
-        handler.post(() -> listener.append("\n-> Dex files " + copiedDexes.toString() + " copied and added to dex path list"));        
     }
 
     private boolean processNativeLibraries(ApplicationInfo mcInfo, @NotNull Object pathList, @NotNull Handler handler, TextView listener) throws Exception {
@@ -382,7 +361,7 @@ public class HomeFragment extends BaseThemedFragment {
         if (!checkLibCompatibility(inZipStream)) {
             handler.post(() -> alertAndExit("Wrong minecraft architecture", "The minecraft you have installed does not support the same main architecture (" + Build.SUPPORTED_ABIS[0] + ") your device uses, Xelo client cant work with it"));
             return false;
-        } 		    
+        }                     
         Method addNativePath = pathList.getClass().getDeclaredMethod("addNativePath", Collection.class);
         ArrayList<String> libDirList = new ArrayList<>();
         File libdir = new File(mcInfo.nativeLibraryDir);
@@ -467,27 +446,6 @@ public class HomeFragment extends BaseThemedFragment {
         zip.close();
     }
 
-    private void launchMinecraft(ApplicationInfo mcInfo) throws ClassNotFoundException {
-        Class<?> launcherClass = requireActivity().getClassLoader().loadClass("com.mojang.minecraftpe.Launcher");
-        
-        // Create a new intent for Minecraft to ensure it launches in a new instance
-        Intent mcActivity = new Intent(requireActivity(), launcherClass);
-        mcActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        mcActivity.putExtra("MC_SRC", mcInfo.sourceDir);
-
-        if (mcInfo.splitSourceDirs != null) {
-            ArrayList<String> listSrcSplit = new ArrayList<>();
-            Collections.addAll(listSrcSplit, mcInfo.splitSourceDirs);
-            mcActivity.putExtra("MC_SPLIT_SRC", listSrcSplit);
-        }
-        
-        // Add additional flags to ensure proper launch
-        mcActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        
-        startActivity(mcActivity);
-        requireActivity().finish();
-    }
-
     private static void copyFile(InputStream from, @NotNull File to) throws IOException {
         File parentDir = to.getParentFile();
         if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
@@ -505,13 +463,13 @@ public class HomeFragment extends BaseThemedFragment {
             }
         }
     }
-    
+
     @Override
     public void onResume() {
         super.onResume();
         DiscordRPCHelper.getInstance().updateMenuPresence("Playing");
     }
-    
+
     @Override
     public void onPause() {
         super.onPause();

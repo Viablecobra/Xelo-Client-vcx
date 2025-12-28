@@ -16,10 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven{url "https://repo.opencollab.dev/maven-snapshots"}
+        maven{url "https://repo.opencollab.dev/maven-releases"}
     }
 }
 
 rootProject.name = "mbloader"
 include ':app'
 include ':minecraft'
+include ':minecraft-msftauth'
