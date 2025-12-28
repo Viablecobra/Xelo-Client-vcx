@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.origin.launcher.R
 import java.io.File
+import com.origin.launcher.MainActivity
 
 class CrashActivity : BaseThemedActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
