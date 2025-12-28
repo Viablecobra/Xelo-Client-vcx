@@ -120,6 +120,47 @@ private void showErrorDialog(String title, String message) {
         .show();
 }
 
+private void createNoMediaFile() {
+        try {
+            java.io.File baseDir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "games/xelo_client");
+            if (!baseDir.exists()) {
+                baseDir.mkdirs();
+            }
+            java.io.File noMediaFile = new java.io.File(baseDir, ".nomedia");
+            if (!noMediaFile.exists()) {
+                noMediaFile.createNewFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+private void ensureToonConfigExists() {
+    try {
+        File configDir = new File("/storage/emulated/0/games/xelo_client/toon");
+        if (!configDir.exists()) {
+            configDir.mkdirs();
+        }
+        
+        File toonFile = new File(configDir, "inbuilt.toon");
+        if (!toonFile.exists()) {
+            String defaultConfig = ""overlay_button": {
+" +
+                "    "normal": "#000000",
+" +
+                "    "active": "#000000"
+" +
+                "}";
+            try (FileOutputStream fos = new FileOutputStream(toonFile)) {
+                fos.write(defaultConfig.getBytes("UTF-8"));
+            }
+        }
+    } catch (Exception e) {
+        Log.w("XeloLauncher", "Failed to create default toon config", e);
+    }
+  }
+}
+
 private void showVersionIsolationDialog() {
     new AlertDialog.Builder(requireContext())
         .setTitle("Version Isolation Required")
@@ -158,6 +199,8 @@ private void checkResourcepack() {
 
         // Apply initial theme
         applyInitialTheme(view);
+        createNoMediaFile();
+        ensureToonConfigExists();
         
         mbl2_button.setOnClickListener(v -> launchGame());
 
