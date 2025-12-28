@@ -3,9 +3,13 @@ package com.origin.launcher.Launcher.inbuilt.overlay;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -16,14 +20,11 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
 import org.json.JSONObject;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import com.origin.launcher.R;
 import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModManager;
@@ -48,8 +49,8 @@ public abstract class BaseOverlayButton {
     private boolean isShowing = false;
     
     protected int dpToPx(int dp) {
-    return (int) (dp * activity.getResources().getDisplayMetrics().density);
-}
+        return (int) (dp * activity.getResources().getDisplayMetrics().density);
+    }
 
     public BaseOverlayButton(Activity activity) {
         this.activity = activity;
@@ -69,60 +70,52 @@ public abstract class BaseOverlayButton {
     }
     
     private String readFileToString(File file) throws IOException {
-    int length = (int) file.length();
-    byte[] bytes = new byte[length];
-    try (FileInputStream fis = new FileInputStream(file)) {
-        fis.read(bytes);
-    }
-    return new String(bytes, "UTF-8");
-}
-private void writeStringToFile(File file, String content) throws IOException {
-    try (FileOutputStream fos = new FileOutputStream(file)) {
-        fos.write(content.getBytes("UTF-8"));
-    }
-}
-    
-    private void applyButtonColorsFromConfig(ImageButton button) {
-    try {
-        File configDir = new File("/storage/emulated/0/games/xelo_client/toon");
-        if (!configDir.exists()) configDir.mkdirs();
-        
-        File toonFile = new File(configDir, "inbuilt.toon");
-        if (!toonFile.exists()) {
-            createDefaultToonConfig(toonFile);
+        int length = (int) file.length();
+        byte[] bytes = new byte[length];
+        try (FileInputStream fis = new FileInputStream(file)) {
+            fis.read(bytes);
         }
-        
-        String toonText = readFileToString(toonFile).trim();
-        JSONObject overlayCfg;
-        if (toonText.startsWith("{")) {
-            JSONObject config = new JSONObject(toonText);
-            overlayCfg = config.getJSONObject("overlay_button");
-        } else {
-            overlayCfg = new JSONObject(toonText);
-        }
-        
-        String fillHex = overlayCfg.getString("fill");
-        String strokeHex = overlayCfg.getString("stroke");
-        
-        GradientDrawable bg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button).mutate();
-        bg.setColor(Color.parseColor(fillHex));
-        bg.setStroke(dpToPx(2), Color.parseColor(strokeHex));
-        button.setBackground(bg);
-        
-    } catch (Exception e) {
-        Log.w("Overlay", "Config failed, using black default", e);
+        return new String(bytes, "UTF-8");
     }
-}
 
-private void createDefaultToonConfig(File toonFile) throws IOException {
-    String defaultConfig = """
-        "overlay_button": {
-            "fill": "#000000",
-            "stroke": "#000000"
+    private void applyButtonColorsFromConfig(ImageButton button) {
+        try {
+            File configDir = new File("/storage/emulated/0/games/xelo_client/toon");
+            File toonFile = new File(configDir, "inbuilt.toon");
+            
+            if (!toonFile.exists()) {
+                Log.w("Overlay", "inbuilt.toon missing - using XML defaults");
+                return;
+            }
+            
+            String toonText = readFileToString(toonFile).trim();
+            JSONObject overlayCfg;
+            if (toonText.startsWith("{")) {
+                JSONObject config = new JSONObject(toonText);
+                overlayCfg = config.getJSONObject("overlay_button");
+            } else {
+                overlayCfg = new JSONObject(toonText);
+            }
+            
+            String normalColor = overlayCfg.getString("normal");
+            GradientDrawable normalBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button).mutate();
+            normalBg.setColor(Color.parseColor(normalColor));
+            normalBg.setStroke(dpToPx(2), Color.parseColor(normalColor));
+            
+            String activeColor = overlayCfg.getString("active");
+            GradientDrawable activeBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button_active).mutate();
+            activeBg.setColor(Color.parseColor(activeColor));
+            activeBg.setStroke(dpToPx(2), Color.parseColor(activeColor));
+            
+            StateListDrawable selector = new StateListDrawable();
+            selector.addState(new int[]{android.R.attr.state_pressed}, activeBg);
+            selector.addState(new int[]{}, normalBg);
+            button.setBackground(selector);
+            
+        } catch (Exception e) {
+            Log.w("Overlay", "Config failed, using black default", e);
         }
-        """;
-    writeStringToFile(toonFile, defaultConfig);
-}
+    }
 
     protected abstract String getModId();
 
@@ -137,8 +130,7 @@ private void createDefaultToonConfig(File toonFile) throws IOException {
             overlayView = LayoutInflater.from(activity).inflate(R.layout.overlay_mod_button, null);
             ImageButton btn = (ImageButton) overlayView;
             btn.setImageResource(getIconResource());
-            
-        applyButtonColorsFromConfig(btn);
+            applyButtonColorsFromConfig(btn);
 
             int buttonSize = getButtonSizePx();
             int padding = (int) (buttonSize * 0.22f);
@@ -177,7 +169,6 @@ private void createDefaultToonConfig(File toonFile) throws IOException {
         overlayView = LayoutInflater.from(activity).inflate(R.layout.overlay_mod_button, null);
         ImageButton btn = (ImageButton) overlayView;
         btn.setImageResource(getIconResource());
-        
         applyButtonColorsFromConfig(btn);
 
         int buttonSize = getButtonSizePx();
