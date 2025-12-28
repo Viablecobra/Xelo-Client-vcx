@@ -144,15 +144,16 @@ private void ensureToonConfigExists() {
         
         File toonFile = new File(configDir, "inbuilt.toon");
         if (!toonFile.exists()) {
-            StringBuilder json = new StringBuilder();
-            json.append("{");
-            json.append(""overlay_button":{");
-            json.append(""normal":"#000000",");
-            json.append(""active":"#000000"");
-            json.append("}}");
-            
+            String json = """
+                {
+                  "overlay_button": {
+                    "normal": "#000000",
+                    "active": "#000000"
+                  }
+                }
+                """;
             try (FileOutputStream fos = new FileOutputStream(toonFile)) {
-                fos.write(json.toString().getBytes("UTF-8"));
+                fos.write(json.getBytes("UTF-8"));
             }
         }
     } catch (Exception e) {
