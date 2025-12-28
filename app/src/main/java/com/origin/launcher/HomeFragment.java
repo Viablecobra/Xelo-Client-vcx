@@ -152,8 +152,7 @@ private void ensureToonConfigExists() {
     } catch (Exception e) {
         Log.w("XeloLauncher", "Failed to create default toon config", e);
     }
-  }
-}
+ }
 
 private void showVersionIsolationDialog() {
     new AlertDialog.Builder(requireContext())
