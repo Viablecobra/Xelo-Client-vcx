@@ -61,6 +61,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.annotation.NonNull;
 import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModSizeStore;
+import com.origin.launcher.Launcher.inbuilt.manager.InbuiltOverlayManager;
 
 public class MainActivity extends BaseThemedActivity {
     private static final String TAG = "MainActivity";
@@ -81,6 +82,9 @@ private static final int REQ_STORAGE_PERMS = 100;
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.activity_main);
+
+    ensureToonConfigExists();
+    InbuiltOverlayManager.getInstance(this).showEnabledOverlays();
 
 
         checkFirstLaunch();
@@ -246,10 +250,10 @@ public void ensureToonConfigExists() {
         if (!toonFile.exists()) {
             String defaultConfig = """
                 {
-                  "quick_drop": "#000000",
-                  "camera_perspective": "#000000",
-                  "toggle_hud": "#000000",
-                  "auto_sprint": { "normal": "#000000", "active": "#000000"}
+                  "QUICK_DROP": "#000000",
+                  "CAMERA_PERSPECTIVE": "#000000",
+                  "TOGGLE_HUD": "#000000",
+                  "AUTO_SPRINT": { "normal": "#000000", "active": "#000000"}
                 }
                 """;
             try (FileOutputStream fos = new FileOutputStream(toonFile)) {

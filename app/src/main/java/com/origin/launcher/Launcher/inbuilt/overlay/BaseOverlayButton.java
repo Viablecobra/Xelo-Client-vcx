@@ -79,64 +79,55 @@ public abstract class BaseOverlayButton {
     }
 
     private void applyButtonColorsFromConfig(ImageButton button) {
-    GradientDrawable normalBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button).mutate();
-    normalBg.setColor(Color.parseColor("#000000"));
-    normalBg.setStroke(dpToPx(2), Color.parseColor("#000000"));
-    
-    try {
-        File toonFile = new File("/storage/emulated/0/games/xelo_client/toon/inbuilt.toon");
-        Log.d("Overlay", "Toon file exists: " + toonFile.exists());
-        Log.d("Overlay", "ModId: " + getModId());
+        String modId = getModId().toUpperCase();
+        GradientDrawable normalBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button).mutate();
+        normalBg.setColor(Color.parseColor("#000000"));
+        normalBg.setStroke(dpToPx(2), Color.parseColor("#000000"));
         
-        if (!toonFile.exists()) {
-            Log.w("Overlay", "inbuilt.toon missing - using black default");
-        } else {
-            String toonText = readFileToString(toonFile).trim();
-            Log.d("Overlay", "Toon content: " + toonText);
-            JSONObject config = new JSONObject(toonText);
+        try {
+            File toonFile = new File("/storage/emulated/0/games/xelo_client/toon/inbuilt.toon");
             
-            if (config.has(getModId())) {
-                Log.d("Overlay", "Found modId in config!");
-                Object buttonCfg = config.get(getModId());
-                Log.d("Overlay", "Button cfg type: " + buttonCfg.getClass().getSimpleName());
-                
-                if (buttonCfg instanceof JSONObject) {
-                    JSONObject cfg = (JSONObject) buttonCfg;
-                    String normalColor = cfg.getString("normal");
-                    Log.d("Overlay", "Using normal/active colors");
-                    normalBg.setColor(Color.parseColor(normalColor));
-                    normalBg.setStroke(dpToPx(2), Color.parseColor(normalColor));
-                    
-                    String activeColor = cfg.getString("active");
-                    GradientDrawable activeBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button_active).mutate();
-                    activeBg.setColor(Color.parseColor(activeColor));
-                    activeBg.setStroke(dpToPx(2), Color.parseColor(activeColor));
-                    
-                    StateListDrawable selector = new StateListDrawable();
-                    selector.addState(new int[]{android.R.attr.state_pressed}, activeBg);
-                    selector.addState(new int[]{-android.R.attr.state_pressed}, normalBg);
-                    selector.addState(new int[]{}, normalBg);
-                    
-                    button.setBackground(selector);
-                } else {
-    String singleColor = config.optString(getModId());
-    Log.d("Overlay", "Single color: " + singleColor);
-    normalBg.setColor(Color.parseColor(singleColor));
-    normalBg.setStroke(dpToPx(2), Color.parseColor(singleColor));
-    button.setBackground(normalBg);
-}
-                return;
+            if (!toonFile.exists()) {
+                Log.w("Overlay", "inbuilt.toon missing");
             } else {
-                Log.w("Overlay", "ModId NOT found in config: " + getModId());
+                String toonText = readFileToString(toonFile).trim();
+                JSONObject config = new JSONObject(toonText);
+                
+                if (config.has(modId)) {
+                    Object buttonCfg = config.get(modId);
+                    
+                    if (buttonCfg instanceof JSONObject) {
+                        JSONObject cfg = (JSONObject) buttonCfg;
+                        String normalColor = cfg.getString("normal");
+                        normalBg.setColor(Color.parseColor(normalColor));
+                        normalBg.setStroke(dpToPx(2), Color.parseColor(normalColor));
+                        
+                        String activeColor = cfg.getString("active");
+                        GradientDrawable activeBg = (GradientDrawable) activity.getDrawable(R.drawable.bg_overlay_button_active).mutate();
+                        activeBg.setColor(Color.parseColor(activeColor));
+                        activeBg.setStroke(dpToPx(2), Color.parseColor(activeColor));
+                        
+                        StateListDrawable selector = new StateListDrawable();
+                        selector.addState(new int[]{android.R.attr.state_pressed}, activeBg);
+                        selector.addState(new int[]{-android.R.attr.state_pressed}, normalBg);
+                        selector.addState(new int[]{}, normalBg);
+                        
+                        button.setBackground(selector);
+                    } else {
+                        String singleColor = config.optString(modId);
+                        normalBg.setColor(Color.parseColor(singleColor));
+                        normalBg.setStroke(dpToPx(2), Color.parseColor(singleColor));
+                        button.setBackground(normalBg);
+                    }
+                    return;
+                }
             }
+        } catch (Exception e) {
+            Log.w("Overlay", "Config failed", e);
         }
-    } catch (Exception e) {
-        Log.w("Overlay", "Config failed", e);
+        
+        button.setBackground(normalBg);
     }
-    
-    Log.d("Overlay", "Using black fallback");
-    button.setBackground(normalBg);
-}
 
     protected abstract String getModId();
 
