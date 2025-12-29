@@ -238,7 +238,7 @@ private void createNoMediaFile() {
         }
     }
 
-private void ensureToonConfigExists() {
+public void ensureToonConfigExists() {
     try {
         File configDir = new File("/storage/emulated/0/games/xelo_client/toon");
         if (!configDir.exists()) {
