@@ -85,7 +85,6 @@ private static final int REQ_STORAGE_PERMS = 100;
 
         checkFirstLaunch();
         createNoMediaFile();
-        ensureToonConfigExists();
         InbuiltModSizeStore.getInstance().init(getApplicationContext());
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
@@ -509,6 +508,7 @@ private void showThemesDialog(SharedPreferences prefs, boolean disclaimerShown) 
               ", resultCode=" + resultCode + ", data=" + (data != null ? "present" : "null"));
               
         if (requestCode == REQ_STORAGE_PERMS) {
+            ensureToonConfigExists();
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         prefs.edit().putBoolean(KEY_STORAGE_PERMS_ASKED, true).apply();
         continueFirstLaunchFlow(prefs);
