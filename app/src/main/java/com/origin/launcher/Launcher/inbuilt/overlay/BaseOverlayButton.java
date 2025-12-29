@@ -85,19 +85,25 @@ public abstract class BaseOverlayButton {
     
     try {
         File toonFile = new File("/storage/emulated/0/games/xelo_client/toon/inbuilt.toon");
+        Log.d("Overlay", "Toon file exists: " + toonFile.exists());
+        Log.d("Overlay", "ModId: " + getModId());
         
         if (!toonFile.exists()) {
             Log.w("Overlay", "inbuilt.toon missing - using black default");
         } else {
             String toonText = readFileToString(toonFile).trim();
+            Log.d("Overlay", "Toon content: " + toonText);
             JSONObject config = new JSONObject(toonText);
             
             if (config.has(getModId())) {
+                Log.d("Overlay", "Found modId in config!");
                 Object buttonCfg = config.get(getModId());
+                Log.d("Overlay", "Button cfg type: " + buttonCfg.getClass().getSimpleName());
                 
                 if (buttonCfg instanceof JSONObject) {
                     JSONObject cfg = (JSONObject) buttonCfg;
                     String normalColor = cfg.getString("normal");
+                    Log.d("Overlay", "Using normal/active colors");
                     normalBg.setColor(Color.parseColor(normalColor));
                     normalBg.setStroke(dpToPx(2), Color.parseColor(normalColor));
                     
@@ -114,17 +120,21 @@ public abstract class BaseOverlayButton {
                     button.setBackground(selector);
                 } else {
                     String singleColor = buttonCfg.toString();
+                    Log.d("Overlay", "Using single color: " + singleColor);
                     normalBg.setColor(Color.parseColor(singleColor));
                     normalBg.setStroke(dpToPx(2), Color.parseColor(singleColor));
                     button.setBackground(normalBg);
                 }
                 return;
+            } else {
+                Log.w("Overlay", "ModId NOT found in config: " + getModId());
             }
         }
     } catch (Exception e) {
-        Log.w("Overlay", "Config failed, using black default", e);
+        Log.w("Overlay", "Config failed", e);
     }
     
+    Log.d("Overlay", "Using black fallback");
     button.setBackground(normalBg);
 }
 
