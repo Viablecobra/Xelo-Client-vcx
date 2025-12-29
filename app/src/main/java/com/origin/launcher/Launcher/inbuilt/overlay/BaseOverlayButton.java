@@ -119,12 +119,8 @@ public abstract class BaseOverlayButton {
                     
                     button.setBackground(selector);
                 } else {
-    Object colorObj = config.get(getModId());
-    String singleColor = colorObj.toString();
-    if (singleColor.startsWith(""") && singleColor.endsWith(""")) {
-        singleColor = singleColor.substring(1, singleColor.length() - 1);
-    }
-    Log.d("Overlay", "Single color parsed: " + singleColor);
+    String singleColor = config.optString(getModId());
+    Log.d("Overlay", "Single color: " + singleColor);
     normalBg.setColor(Color.parseColor(singleColor));
     normalBg.setStroke(dpToPx(2), Color.parseColor(singleColor));
     button.setBackground(normalBg);
