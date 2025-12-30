@@ -74,8 +74,6 @@ public class MainActivity extends BaseThemedActivity {
 private static final String KEY_CREDITS_SHOWN = "credits_shown";
 private static final String KEY_STORAGE_PERMS_ASKED = "storage_perms_asked";
 private static final int REQ_STORAGE_PERMS = 100;
-private static final int SAF_REQUEST = 1001;
-private static final String KEY_SAF_URI = "saf_uri";
 
     private SettingsFragment settingsFragment;
     private int currentFragmentIndex = 0;
@@ -86,10 +84,6 @@ private static final String KEY_SAF_URI = "saf_uri";
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.activity_main);
-        
-    if (!hasPersistedUriPermission()) {
-        requestSAFPermission();
-    }
 
     ensureToonConfigExists();
     InbuiltOverlayManager.getInstance(this).showEnabledOverlays();
@@ -232,23 +226,6 @@ private void ensureStorageAccess(SharedPreferences prefs) {
     
     prefs.edit().putBoolean(KEY_STORAGE_PERMS_ASKED, true).apply();
     continueFirstLaunchFlow(prefs);
-}
-
-private void requestSAFPermission() {
-    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                   Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                   Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-    startActivityForResult(intent, SAF_REQUEST);
-}
-private boolean hasPersistedUriPermission() {
-    java.util.List<android.content.UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
-    for (android.content.UriPermission perm : permissions) {
-        if (perm.isReadPermission() && perm.isWritePermission()) {
-            return true;
-        }
-    }
-    return false;
 }
 
 private void createNoMediaFile() {
@@ -535,19 +512,6 @@ private void showThemesDialog(SharedPreferences prefs, boolean disclaimerShown) 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        
-        if (requestCode == SAF_REQUEST && resultCode == RESULT_OK && data != null) {
-        Uri treeUri = data.getData();
-        if (treeUri != null) {
-            getContentResolver().takePersistableUriPermission(
-                treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            );
-            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                .edit().putString(KEY_SAF_URI, treeUri.toString()).apply();
-        }
-    }
         
         Log.d(TAG, "MainActivity onActivityResult: requestCode=" + requestCode + 
               ", resultCode=" + resultCode + ", data=" + (data != null ? "present" : "null"));
