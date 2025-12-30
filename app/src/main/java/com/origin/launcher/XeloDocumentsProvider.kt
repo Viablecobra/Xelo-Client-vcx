@@ -51,7 +51,8 @@ class XeloDocumentsProvider : DocumentsProvider() {
     }
 
     override fun onCreate(): Boolean {
-        baseDir = context!!.filesDir
+        baseDir = context!!.getExternalFilesDir(null)!!
+    if (!baseDir.exists()) baseDir.mkdirs()
         return true
     }
 
@@ -61,7 +62,7 @@ class XeloDocumentsProvider : DocumentsProvider() {
         row.add(DocumentsContract.Root.COLUMN_ROOT_ID, getDocIdForFile(baseDir))
         row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, getDocIdForFile(baseDir))
         row.add(DocumentsContract.Root.COLUMN_FLAGS, getRootFlags())
-        row.add(DocumentsContract.Root.COLUMN_ICON, android.R.drawable.ic_menu_gallery)
+        row.add(DocumentsContract.Root.COLUMN_ICON, R.mipmap.ic_launcher)
         row.add(DocumentsContract.Root.COLUMN_TITLE, "Xelo Client")
         row.add(DocumentsContract.Root.COLUMN_SUMMARY, "Internal Storage")
         row.add(DocumentsContract.Root.COLUMN_MIME_TYPES, ALL_MIME_TYPES)
@@ -176,7 +177,7 @@ class XeloDocumentsProvider : DocumentsProvider() {
         row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, getTypeForFile(f))
         row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, f.lastModified())
         row.add(DocumentsContract.Document.COLUMN_FLAGS, flags)
-        row.add(DocumentsContract.Document.COLUMN_ICON, android.R.drawable.ic_menu_gallery)
+        row.add(DocumentsContract.Document.COLUMN_ICON, R.mipmap.ic_launcher)
     }
 
     private fun getDocIdForFile(file: File): String = file.absolutePath
