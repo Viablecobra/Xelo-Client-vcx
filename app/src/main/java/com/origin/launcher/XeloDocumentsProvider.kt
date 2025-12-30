@@ -18,6 +18,8 @@ import java.io.FileNotFoundException
 class XeloDocumentsProvider : DocumentsProvider() {
     
     override fun attachInfo(context: Context, info: ProviderInfo) {
+        // Bypass MANAGE_DOCUMENTS check for app-internal provider
+        this.attachInfo = null
         super.attachInfo(context, info)
     }
 
