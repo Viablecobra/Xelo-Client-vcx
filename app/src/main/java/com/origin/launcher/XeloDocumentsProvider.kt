@@ -22,7 +22,7 @@ class XeloDocumentsProvider : DocumentsProvider() {
     
     private companion object {
         const val ALL_MIME_TYPES = "*/*"
-        val DEFAULT_ROOT_PROJECTION = arrayOf(
+        private val DEFAULT_ROOT_PROJECTION = arrayOf(
             DocumentsContract.Root.COLUMN_ROOT_ID,
             DocumentsContract.Root.COLUMN_MIME_TYPES,
             DocumentsContract.Root.COLUMN_FLAGS,
@@ -32,7 +32,7 @@ class XeloDocumentsProvider : DocumentsProvider() {
             DocumentsContract.Root.COLUMN_DOCUMENT_ID,
             DocumentsContract.Root.COLUMN_AVAILABLE_BYTES
         )
-        val DEFAULT_DOCUMENT_PROJECTION = arrayOf(
+        private val DEFAULT_DOCUMENT_PROJECTION = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
             DocumentsContract.Document.COLUMN_MIME_TYPE,
             DocumentsContract.Document.COLUMN_DISPLAY_NAME,
