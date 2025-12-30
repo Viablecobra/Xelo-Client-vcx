@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.net.Uri;
+import android.app.Activity;
 import com.bumptech.glide.Glide;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -62,7 +63,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.annotation.NonNull;
 import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModSizeStore;
-import com.origin.launcher.Launcher.inbuilt.manager.InbuiltOverlayManager;
+import com.origin.launcher.Launcher.inbuilt.overlay.InbuiltOverlayManager;
 
 public class MainActivity extends BaseThemedActivity {
     private static final String TAG = "MainActivity";
@@ -535,7 +536,7 @@ private void showThemesDialog(SharedPreferences prefs, boolean disclaimerShown) 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         
-        if (requestCode == SAF_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == SAF_REQUEST && resultCode == RESULT_OK && data != null) {
         Uri treeUri = data.getData();
         if (treeUri != null) {
             getContentResolver().takePersistableUriPermission(
