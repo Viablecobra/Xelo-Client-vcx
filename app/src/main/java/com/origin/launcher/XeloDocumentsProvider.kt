@@ -1,6 +1,7 @@
 package com.origin.launcher
 
 import android.content.Context
+import android.content.pm.ProviderInfo
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
@@ -16,7 +17,7 @@ import java.io.FileNotFoundException
 
 class XeloDocumentsProvider : DocumentsProvider() {
     
-    override fun attachInfo(context: Context, info: DocumentsContract.ProviderInfo) {
+    override fun attachInfo(context: Context, info: ProviderInfo) {
         super.attachInfo(context, info)
     }
 
