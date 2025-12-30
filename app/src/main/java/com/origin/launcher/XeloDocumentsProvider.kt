@@ -121,12 +121,14 @@ class XeloDocumentsProvider : DocumentsProvider() {
         return flags
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun resolveRootProjection(projection: Array<out String>?): Array<String> {
-        return projection ?: DEFAULT_ROOT_PROJECTION
+        return (projection as? Array<String>) ?: DEFAULT_ROOT_PROJECTION
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun resolveDocumentProjection(projection: Array<out String>?): Array<String> {
-        return projection ?: DEFAULT_DOCUMENT_PROJECTION
+        return (projection as? Array<String>) ?: DEFAULT_DOCUMENT_PROJECTION
     }
 
     private fun getTypeForFile(file: File): String {
