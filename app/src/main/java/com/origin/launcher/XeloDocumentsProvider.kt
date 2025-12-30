@@ -1,5 +1,7 @@
 package com.origin.launcher
 
+import android.content.Context
+import android.content.pm.ProviderInfo
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
@@ -13,11 +15,11 @@ import android.provider.DocumentsProvider
 import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.IOException
 
 class XeloDocumentsProvider : DocumentsProvider() {
     
     private lateinit var baseDir: File
+    
     private companion object {
         const val ALL_MIME_TYPES = "*/*"
         val DEFAULT_ROOT_PROJECTION = arrayOf(
@@ -36,11 +38,12 @@ class XeloDocumentsProvider : DocumentsProvider() {
             DocumentsContract.Document.COLUMN_DISPLAY_NAME,
             DocumentsContract.Document.COLUMN_LAST_MODIFIED,
             DocumentsContract.Document.COLUMN_FLAGS,
-            DocumentsContract.Document.COLUMN_SIZE
+            DocumentsContract.Document.COLUMN_SIZE,
+            DocumentsContract.Document.COLUMN_ICON
         )
     }
 
-    override fun attachInfo(context: android.content.Context, info: android.content.pm.ProviderInfo) {
+    override fun attachInfo(context: Context, info: ProviderInfo) {
         try {
             super.attachInfo(context, info)
         } catch (e: SecurityException) {
@@ -111,19 +114,19 @@ class XeloDocumentsProvider : DocumentsProvider() {
     }
 
     private fun getRootFlags(): Long {
-        var flags = DocumentsContract.Root.FLAG_LOCAL_ONLY
+        var flags: Long = DocumentsContract.Root.FLAG_LOCAL_ONLY
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            flags = flags or DocumentsContract.Root.FLAG_SUPPORTS_CREATE or DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD
+            flags = flags or DocumentsContract.Root.FLAG_SUPPORTS_CREATE.toLong() or DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD.toLong()
         }
         return flags
     }
 
     private fun resolveRootProjection(projection: Array<out String>?): Array<String> {
-        return projection ?: DEFAULT_ROOT_PROJECTION
+        return projection?.toTypedArray() ?: DEFAULT_ROOT_PROJECTION
     }
 
     private fun resolveDocumentProjection(projection: Array<out String>?): Array<String> {
-        return projection ?: DEFAULT_DOCUMENT_PROJECTION
+        return projection?.toTypedArray() ?: DEFAULT_DOCUMENT_PROJECTION
     }
 
     private fun getTypeForFile(file: File): String {
@@ -147,21 +150,21 @@ class XeloDocumentsProvider : DocumentsProvider() {
         val id = docId ?: getDocIdForFile(file!!)
         val f = file ?: getFileForDocId(id)
         
-        var flags = 0L
+        var flags: Long = 0
         if (f.canWrite()) {
-            flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_DELETE
+            flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_DELETE.toLong()
             if (f.isDirectory) {
-                flags = flags or DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE
+                flags = flags or DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE.toLong()
             } else {
-                flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_WRITE
+                flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_WRITE.toLong()
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_RENAME
+                flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_RENAME.toLong()
             }
         }
         
         if (getTypeForFile(f).startsWith("image/")) {
-            flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_THUMBNAIL
+            flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_THUMBNAIL.toLong()
         }
 
         val row = result.newRow()
