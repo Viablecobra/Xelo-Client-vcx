@@ -183,13 +183,13 @@ class XeloDocumentsProvider : DocumentsProvider() {
     private fun getFileIcon(file: File): Int {
     val mimeType = getTypeForFile(file)
     return when {
-        file.isDirectory -> android.R.drawable.ic_menu_archive
+        file.isDirectory -> android.R.drawable.ic_folder_open
         mimeType.startsWith("image/") -> android.R.drawable.ic_menu_gallery
-        mimeType.startsWith("video/") -> android.R.drawable.ic_menu_play
-        mimeType.startsWith("audio/") -> android.R.drawable.ic_menu_play
-        mimeType.contains("zip") || mimeType.contains("rar") -> android.R.drawable.ic_menu_archive
-        file.name.endsWith(".mcpack", true) || file.name.endsWith(".mcaddon", true) -> android.R.drawable.ic_menu_archive
-        else -> android.R.drawable.ic_menu_save
+        mimeType.startsWith("video/") -> android.R.drawable.ic_media_play
+        mimeType.startsWith("audio/") -> android.R.drawable.ic_lock_idle_lock
+        mimeType.contains("zip") || mimeType.contains("rar") -> android.R.drawable.ic_dialog_info
+        file.name.endsWith(".mcpack", true) || file.name.endsWith(".mcaddon", true) -> android.R.drawable.ic_dialog_info
+        else -> android.R.drawable.ic_menu_info_details
     }
 }
 
