@@ -22,9 +22,12 @@ public class InbuiltOverlayManager {
         instance = this;
     }
 
-    public static InbuiltOverlayManager getInstance() {
-        return instance;
+    public static InbuiltOverlayManager getInstance(Activity activity) {
+    if (instance == null || instance.activity != activity) {
+        instance = new InbuiltOverlayManager(activity);
     }
+    return instance;
+}
 
     private int[] getStartPosition(String modId, int defaultX, int defaultY) {
         InbuiltModSizeStore store = InbuiltModSizeStore.getInstance();
