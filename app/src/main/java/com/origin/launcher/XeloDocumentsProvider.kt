@@ -177,8 +177,21 @@ class XeloDocumentsProvider : DocumentsProvider() {
         row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, getTypeForFile(f))
         row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, f.lastModified())
         row.add(DocumentsContract.Document.COLUMN_FLAGS, flags)
-        row.add(DocumentsContract.Document.COLUMN_ICON, R.mipmap.ic_launcher)
+        row.add(DocumentsContract.Document.COLUMN_ICON, getFileIcon(f))
     }
+    
+    private fun getFileIcon(file: File): Int {
+    val mimeType = getTypeForFile(file)
+    return when {
+        file.isDirectory -> android.R.drawable.ic_menu_archive
+        mimeType.startsWith("image/") -> android.R.drawable.ic_menu_gallery
+        mimeType.startsWith("video/") -> android.R.drawable.ic_menu_play
+        mimeType.startsWith("audio/") -> android.R.drawable.ic_menu_play
+        mimeType.contains("zip") || mimeType.contains("rar") -> android.R.drawable.ic_menu_archive
+        file.name.endsWith(".mcpack", true) || file.name.endsWith(".mcaddon", true) -> android.R.drawable.ic_menu_archive
+        else -> android.R.drawable.ic_menu_save
+    }
+}
 
     private fun getDocIdForFile(file: File): String = file.absolutePath
 
