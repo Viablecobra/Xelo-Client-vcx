@@ -103,6 +103,7 @@
     <string name="disable_launcher_login_and_continue">Close</string>
     <string name="ms_add_account">Add Account</string>
     <string name="ms_add_account_subtitle">Sign in with Microsoft</string>
+    <string name="back">Back</string>
 
 <!-- Previous dialog strings (if missing) -->
 <string name="dialog_title_no_version">No Version</string>
