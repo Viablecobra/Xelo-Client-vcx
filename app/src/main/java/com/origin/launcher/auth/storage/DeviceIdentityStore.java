@@ -35,7 +35,7 @@ public class DeviceIdentityStore implements XalJsonExportable {
          di.key = KEY_MARKER_VALUE;
          String json = GSON.toJson(di);
          File f = XalStorageManager.getDeviceIdentityFile(ctx, userId);
-         com.origin.launcher.util.JsonIOUtils.write(f, json);
+         com.origin.launcher.JsonIOUtils.write(f, json);
      }
 
     @Override

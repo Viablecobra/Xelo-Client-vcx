@@ -135,7 +135,7 @@ public class UserTokenStore implements XalJsonExportable {
 
         String json = GSON.toJson(root);
         File f = XalStorageManager.getUserTokenFile(ctx, msaUserId);
-        com.origin.launcher.util.JsonIOUtils.write(f, json);
+        com.origin.launcher.JsonIOUtils.write(f, json);
     }
 
     @Override

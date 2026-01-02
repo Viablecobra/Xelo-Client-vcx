@@ -62,7 +62,7 @@ public class DTokenStore implements XalJsonExportable {
 
         java.io.File dir = XalStorageManager.getUserDir(ctx, userId);
         java.io.File f = new java.io.File(dir, FILENAME);
-        com.origin.launcher.util.JsonIOUtils.write(f, json);
+        com.origin.launcher.JsonIOUtils.write(f, json);
     }
 
 

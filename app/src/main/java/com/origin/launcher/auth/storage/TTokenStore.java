@@ -68,7 +68,7 @@ public class TTokenStore implements XalJsonExportable {
         String json = GSON.toJson(box);
         java.io.File dir = XalStorageManager.getUserDir(ctx, userId);
         java.io.File f = new java.io.File(dir, filename(config));
-        com.origin.launcher.util.JsonIOUtils.write(f, json);
+        com.origin.launcher.JsonIOUtils.write(f, json);
     }
 
 

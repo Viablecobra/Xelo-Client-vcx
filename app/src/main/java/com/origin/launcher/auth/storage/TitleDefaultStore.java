@@ -35,7 +35,7 @@ public class TitleDefaultStore implements XalJsonExportable {
         box.defaultUserId = userId;
         String json = GSON.toJson(box);
         File f = XalStorageManager.getTitleDefaultFile(ctx, userId);
-        com.origin.launcher.util.JsonIOUtils.write(f, json);
+        com.origin.launcher.JsonIOUtils.write(f, json);
     }
 
 
