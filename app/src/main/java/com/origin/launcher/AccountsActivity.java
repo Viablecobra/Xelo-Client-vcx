@@ -36,7 +36,7 @@ import android.util.Pair;
 import coelho.msftauth.api.oauth20.OAuth20Token;
 import com.origin.launcher.auth.storage.XalStorageManager;
 
-public class AccountsActivity extends BaseActivity {
+public class AccountsActivity extends BaseThemedActivity {
 
     private TextView gamertagText;
     private TextView privilegesText;
