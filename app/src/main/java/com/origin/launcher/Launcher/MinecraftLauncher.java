@@ -18,6 +18,8 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MinecraftLauncher {
     private static final String TAG = "MinecraftLauncher";
@@ -120,32 +122,37 @@ public class MinecraftLauncher {
                 sourceIntent.putExtra("MODS_ENABLED", modsEnabled);
                 sourceIntent.putExtra("MINECRAFT_VERSION", version.versionCode);
                 sourceIntent.putExtra("MINECRAFT_VERSION_DIR", version.directoryName);
-                if (shouldLoadHttpClient(version)) {
-                    gameManager.loadLibrary("c++_shared");
-                    if (gameManager.loadLibrary("HttpClient.Android")) {
-                        Log.d(TAG, "Loaded Minecraft's libHttpClient.Android.so");
-                    } else {
-                        Log.w(TAG, "HttpClient.Android not found in extracted libs");
-                    }
-                }
 
                 if (shouldLoadMaesdk(version)) {
-                    java.util.Set<String> excludeLibs = new java.util.HashSet<>();
+                    Set<String> excludeLibs = new HashSet<>();
                     if (shouldLoadHttpClient(version)) {
+                        gameManager.loadLibrary("c++_shared");
                         excludeLibs.add("c++_shared");
                         excludeLibs.add("HttpClient.Android");
                     }
+                    excludeLibs.add("minecraftpe");
                     gameManager.loadAllLibraries(excludeLibs);
+
+                    if (!gameManager.loadLibrary("minecraftpe")) {
+                        throw new RuntimeException("Failed to load libminecraftpe.so");
+                    }
                 } else {
-                    if (!shouldLoadHttpClient(version)) {
+                    if (shouldLoadHttpClient(version)) {
+                        gameManager.loadLibrary("c++_shared");
+                        if (gameManager.loadLibrary("HttpClient.Android")) {
+                            Log.d(TAG, "Loaded libHttpClient.Android.so");
+                        }
+                    } else {
                         gameManager.loadLibrary("c++_shared");
                     }
                     gameManager.loadLibrary("fmod");
                     gameManager.loadLibrary("MediaDecoders_Android");
                     gameManager.loadLibrary("minecraftpe");
-                    gameManager.loadLibrary("xelo");
-                    gameManager.loadLibrary("mtbinloader2");
                 }
+
+                gameManager.loadLibrary("xelo");
+                gameManager.loadLibrary("mtbinloader2");
+
                 ModNativeLoader.loadEnabledSoMods(ModManager.getInstance(), context.getCacheDir());
 
                 activity.runOnUiThread(() -> {
