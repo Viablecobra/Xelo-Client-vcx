@@ -135,7 +135,7 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
 
         int initialSize = clampSize(DEFAULT_SIZE_DP);
         sizeSeekBar.setProgress(sizeToProgress(initialSize));
-        sliderContainer.setVisibility(View.VISIBLE);  // Always visible now
+        sliderContainer.setVisibility(View.VISIBLE);
         currentMode = SliderMode.SIZE;
         sliderLabel.setText("Size");
         lastSelectedButton = null;
@@ -159,7 +159,6 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                     result.putExtra("posx_" + id, x);
                     result.putExtra("posy_" + id, y);
                 }
-                boolean locked = InbuiltModSizeStore.getInstance().isLocked(id);
             }
             for (Map.Entry<String, Integer> e : modOpacity.entrySet()) {
                 String id = e.getKey();
@@ -202,10 +201,9 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 int sizeDp = modSizes.getOrDefault(lastSelectedId, DEFAULT_SIZE_DP);
                 sizeSeekBar.setProgress(sizeToProgress(sizeDp));
             } else {
-                int initialSize = clampSize(DEFAULT_SIZE_DP);
-                sizeSeekBar.setProgress(sizeToProgress(initialSize));
+                sizeSeekBar.setProgress(sizeToProgress(DEFAULT_SIZE_DP));
             }
-            sizeSeekBar.invalidate();  // Force redraw
+            sizeSeekBar.invalidate();
         });
 
         opacityButton.setOnClickListener(v -> {
@@ -215,10 +213,9 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 int opacity = modOpacity.getOrDefault(lastSelectedId, DEFAULT_OPACITY);
                 sizeSeekBar.setProgress(opacity * SEEKBAR_MAX / MAX_OPACITY);
             } else {
-                int initialOpacity = DEFAULT_OPACITY;
-                sizeSeekBar.setProgress(initialOpacity * SEEKBAR_MAX / MAX_OPACITY);
+                sizeSeekBar.setProgress(DEFAULT_OPACITY * SEEKBAR_MAX / MAX_OPACITY);
             }
-            sizeSeekBar.invalidate();  // Force redraw
+            sizeSeekBar.invalidate();
         });
     }
 
@@ -259,7 +256,6 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 lockSwitch.setChecked(InbuiltModSizeStore.getInstance().isLocked(id));
             }
 
-            // Apply current mode settings
             if (currentMode == SliderMode.SIZE) {
                 int sizeDp = modSizes.getOrDefault(id, DEFAULT_SIZE_DP);
                 sizeDp = clampSize(sizeDp);
@@ -277,7 +273,7 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity {
                 modOpacity.put(id, opacity);
                 sizeSeekBar.setProgress(opacity * SEEKBAR_MAX / MAX_OPACITY);
             }
-            sizeSeekBar.invalidate();  // Force redraw after update
+            sizeSeekBar.invalidate();
         });
 
         btn.setOnTouchListener(new View.OnTouchListener() {
