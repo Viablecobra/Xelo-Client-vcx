@@ -34,8 +34,9 @@ class GamePackageManager private constructor(private val context: Context, priva
 
     private val systemLoadedLibs = arrayOf(
         "libpairipcore.so",
+        "libPlayFabMultiplayer.so",
         "libxelo.so",
-        "libmtbinloader2.so"
+        "libmtbinloader2.so",
     )
 
     init {
