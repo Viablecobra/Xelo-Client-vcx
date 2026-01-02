@@ -1,4 +1,4 @@
-package com.origin.launcher.activities;
+package com.origin.launcher;
 
 import android.content.Intent;
 import android.os.Bundle;
