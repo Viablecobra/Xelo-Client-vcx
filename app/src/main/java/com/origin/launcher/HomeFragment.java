@@ -73,6 +73,7 @@ import okhttp3.Response;
 import coelho.msftauth.api.oauth20.OAuth20Token;
 import android.widget.ProgressBar;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 
 import com.origin.launcher.auth.MsftAccountStore;
@@ -102,10 +103,21 @@ public class HomeFragment extends BaseThemedFragment {
     private ActivityResultLauncher<Intent> accountLoginLauncher;
     private OnBackPressedCallback onBackPressedCallback;
     
+    private MsftAccountStore.MsftAccount getActiveAccount() {
+    List<MsftAccountStore.MsftAccount> list = MsftAccountStore.list(requireActivity());
+    for (MsftAccountStore.MsftAccount a : list) if (a.active) return a;
+    return null;
+}
+    
 private void launchGame() {
     if (mbl2_button == null) return;
-    
     mbl2_button.setEnabled(false);
+    
+    MsftAccountStore.MsftAccount active = getActiveAccount();
+    if (active != null && active.minecraftUsername != null) {
+        minecraftLauncher.setMsftLogin(active.minecraftUsername, active.xuid);
+        Log.d(TAG, "MC Login set: " + active.minecraftUsername);
+    }
 
     GameVersion version = versionManager != null ? versionManager.getSelectedVersion() : null;
 
@@ -180,6 +192,14 @@ private void checkResourcepack() {
         versions_button = view.findViewById(R.id.versions_button);
         shareLogsButton = view.findViewById(R.id.share_logs_button);
         Handler handler = new Handler(Looper.getMainLooper());
+        
+        signInButton = view.findViewById(R.id.signInButton);
+    accountAvatar = view.findViewById(R.id.accountAvatar);
+    accountAvatarContainer = view.findViewById(R.id.accountAvatarContainer);
+    avatarProgress = view.findViewById(R.id.avatarProgress);
+    
+    initAccountHeader();
+    refreshAccountHeaderUI();
 
         // Apply initial theme
         applyInitialTheme(view);
@@ -572,15 +592,18 @@ if (signInButton != null) {
 }
 
 private void refreshAccountHeaderUI() {
-    com.origin.launcher.auth.MsftAccountStore.MsftAccount active = getActiveAccount();
+    MsftAccountStore.MsftAccount active = getActiveAccount();
     if (active == null) {
         if (signInButton != null) signInButton.setVisibility(View.VISIBLE);
         if (accountAvatarContainer != null) accountAvatarContainer.setVisibility(View.GONE);
-        if (accountAvatar != null) accountAvatar.setImageDrawable(null);
-        lastAvatarXuid = null;
+        if (accountAvatar != null) {
+            accountAvatar.setImageDrawable(null);
+            lastAvatarXuid = null;
+        }
         if (avatarProgress != null) avatarProgress.setVisibility(View.GONE);
         return;
     }
+    
     if (signInButton != null) signInButton.setVisibility(View.GONE);
     if (accountAvatarContainer != null) accountAvatarContainer.setVisibility(View.VISIBLE);
     loadXboxAvatar(active);
@@ -594,25 +617,32 @@ private com.origin.launcher.auth.MsftAccountStore.MsftAccount getActiveAccount()
     return null;
 }
 
-private void loadXboxAvatar(com.origin.launcher.auth.MsftAccountStore.MsftAccount active) {
+private void loadXboxAvatar(MsftAccountStore.MsftAccount active) {
     if (accountAvatar == null) return;
-    String url = com.origin.launcher.AccountTextUtils.sanitizeUrl(active != null ? active.xboxAvatarUrl : null);
+    
+    String url = AccountTextUtils.sanitizeUrl(active != null ? active.xboxAvatarUrl : null);
     if (url == null) {
         if (avatarProgress != null) avatarProgress.setVisibility(View.GONE);
         accountAvatar.setImageDrawable(null);
         lastAvatarXuid = null;
         return;
     }
+    
     accountAvatar.setImageDrawable(null);
     if (avatarProgress != null) avatarProgress.setVisibility(View.VISIBLE);
+    
     accountExecutor.execute(() -> {
         try {
-            okhttp3.Response imgResp = avatarClient.newCall(new okhttp3.Request.Builder().url(url).build()).execute();
-            Bitmap bmp = imgResp.isSuccessful() && imgResp.body() != null ? android.graphics.BitmapFactory.decodeStream(imgResp.body().byteStream()) : null;
-            requireActivity().runOnUiThread(() -> {
-                if (bmp != null) accountAvatar.setImageBitmap(bmp);
-                if (avatarProgress != null) avatarProgress.setVisibility(View.GONE);
-            });
+            try (Response imgResp = avatarClient.newCall(new Request.Builder().url(url).build()).execute()) {
+                Bitmap bmp = (imgResp.isSuccessful() && imgResp.body() != null) 
+                    ? BitmapFactory.decodeStream(imgResp.body().byteStream()) : null;
+                requireActivity().runOnUiThread(() -> {
+                    if (bmp != null) {
+                        accountAvatar.setImageBitmap(bmp);
+                    }
+                    if (avatarProgress != null) avatarProgress.setVisibility(View.GONE);
+                });
+            }
         } catch (Exception e) {
             requireActivity().runOnUiThread(() -> {
                 if (avatarProgress != null) avatarProgress.setVisibility(View.GONE);
