@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+import java.util.List;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -103,6 +104,8 @@ public class HomeFragment extends BaseThemedFragment {
     private ActivityResultLauncher<Intent> accountLoginLauncher;
     private OnBackPressedCallback onBackPressedCallback;
     
+    private String msftUsername;
+    private String msftXuid;
     private MsftAccountStore.MsftAccount getActiveAccount() {
     List<MsftAccountStore.MsftAccount> list = MsftAccountStore.list(requireActivity());
     for (MsftAccountStore.MsftAccount a : list) if (a.active) return a;
@@ -609,14 +612,6 @@ private void refreshAccountHeaderUI() {
     loadXboxAvatar(active);
 }
 
-private com.origin.launcher.auth.MsftAccountStore.MsftAccount getActiveAccount() {
-    java.util.List<com.origin.launcher.auth.MsftAccountStore.MsftAccount> list = com.origin.launcher.auth.MsftAccountStore.list(requireActivity());
-    for (com.origin.launcher.auth.MsftAccountStore.MsftAccount a : list) {
-        if (a.active) return a;
-    }
-    return null;
-}
-
 private void loadXboxAvatar(MsftAccountStore.MsftAccount active) {
     if (accountAvatar == null) return;
     
@@ -655,4 +650,10 @@ private void showAccountSwitchPopup(View anchor) {
     Intent intent = new Intent(requireActivity(), AccountsActivity.class);
     startActivity(intent);
   }
+  
+public void setMsftLogin(String username, String xuid) {
+    this.msftUsername = username;
+    this.msftXuid = xuid;
+    Log.d("MinecraftLauncher", "MSFT Login set: " + username);
+}
 }
