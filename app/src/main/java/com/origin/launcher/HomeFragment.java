@@ -208,9 +208,6 @@ private void checkResourcepack() {
     accountAvatar = view.findViewById(R.id.accountAvatar);
     accountAvatarContainer = view.findViewById(R.id.accountAvatarContainer);
     avatarProgress = view.findViewById(R.id.avatarProgress);
-    
-    initAccountHeader();
-    refreshAccountHeaderUI();
 
         // Apply initial theme
         applyInitialTheme(view);
