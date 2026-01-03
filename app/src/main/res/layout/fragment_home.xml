@@ -17,6 +17,53 @@
 		android:layout_marginBottom="32dp"
 		style="@style/AppTitleStyle" />
 
+<Button
+                    android:id="@+id/sign_in_button"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:layout_marginStart="4dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:fontFamily="@font/mojangles"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:backgroundTint="@color/primary"
+                    android:text="@string/sign_in"
+                    android:textColor="@color/onPrimary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:visibility="gone"/>
+
+                <FrameLayout
+                    android:id="@+id/account_avatar_container"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                    android:visibility="gone">
+
+                    <com.microsoft.xbox.idp.toolkit.CircleImageView
+                        android:id="@+id/account_avatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/xbox_avatar"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_minecraft_cube" />
+
+                    <ProgressBar
+                        android:id="@+id/avatar_progress"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="true"
+                        android:visibility="gone" />
+                </FrameLayout>
+
 	<com.google.android.material.card.MaterialCardView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
