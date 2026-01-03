@@ -147,9 +147,9 @@ private void launchGame() {
         .putBoolean("demo", false)
         .apply();
     if (listener != null) {
-        listener.append("
-Injected: " + active.minecraftUsername);
-    }
+    listener.append("""
+        *** Injected: """ + active.minecraftUsername);
+}
 }
 
     if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
