@@ -108,6 +108,7 @@
             android:excludeFromRecents="false"
             android:exported="true"
             android:launchMode="singleTask"
+            android:taskAffinity="com.origin.launcher.minecraft"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             tools:ignore="DiscouragedApi">
             <meta-data
@@ -153,37 +154,41 @@
         </activity>
 
         <activity
-            android:name="com.microsoft.xal.browser.IntentHandler"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
-            android:alwaysRetainTaskState="true"
-            tools:replace="android:configChanges,android:exported">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <data
-                    android:scheme="ms-xal-0000000048183522"
-                    android:host="auth" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
+    android:name="com.microsoft.xal.browser.IntentHandler"
+    android:exported="true"
+    android:launchMode="singleTask"
+    android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
+    android:alwaysRetainTaskState="true"
+    android:taskAffinity="com.origin.launcher.minecraft"
+    tools:replace="android:configChanges,android:exported">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <data
+            android:scheme="ms-xal-0000000048183522"
+            android:host="auth" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+    </intent-filter>
+</activity>
 
         <activity
-            android:name="com.microsoft.xal.browser.BrowserLaunchActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
-            android:alwaysRetainTaskState="true"
-            tools:replace="android:configChanges,android:exported" />
+    android:name="com.microsoft.xal.browser.BrowserLaunchActivity"
+    android:exported="false"
+    android:launchMode="singleTask"
+    android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
+    android:alwaysRetainTaskState="true"
+    android:taskAffinity="com.origin.launcher.minecraft"
+    tools:replace="android:configChanges,android:exported" />
 
         <activity
-            android:name="com.microsoft.xal.browser.WebKitWebViewController"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
-            android:alwaysRetainTaskState="true"
-            tools:replace="android:configChanges,android:exported" />
+    android:name="com.microsoft.xal.browser.WebKitWebViewController"
+    android:exported="false"
+    android:launchMode="singleTask"
+    android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
+    android:alwaysRetainTaskState="true"
+    android:taskAffinity="com.origin.launcher.minecraft"
+    tools:replace="android:configChanges,android:exported" />
+
 <!-- Accounts Management -->
         <activity
             android:name="com.origin.launcher.AccountsActivity"
