@@ -175,8 +175,9 @@ accountExecutor.execute(() -> {
 });
     
     if (listener != null) {
-        listener.append("
-Injected: " + active.minecraftUsername);
+        listener.append("""
+            
+Injected: """ + active.minecraftUsername);
     }
 }
 
