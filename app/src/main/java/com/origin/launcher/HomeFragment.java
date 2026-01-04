@@ -107,8 +107,6 @@ public class HomeFragment extends BaseThemedFragment {
     private com.origin.launcher.LoadingDialog accountLoadingDialog;
     private ActivityResultLauncher<Intent> accountLoginLauncher;
     private OnBackPressedCallback onBackPressedCallback;
-    
-    private String msftUsername;private String msftXuid;
     private MsftAccountStore.MsftAccount getActiveAccount() {
     List<MsftAccountStore.MsftAccount> list = MsftAccountStore.list(requireActivity());
     for (MsftAccountStore.MsftAccount a : list) if (a.active) return a;
@@ -120,8 +118,8 @@ private void launchGame() {
     mbl2_button.setEnabled(false);
     
     LoadingDialog launchLoading = new LoadingDialog(requireActivity());
-launchLoading.show();
-launchLoading.setMessage("Starting");
+    launchLoading.show();
+    launchLoading.setMessage("Starting");
 
     GameVersion version = versionManager != null ? versionManager.getSelectedVersion() : null;
     if (version == null) {
@@ -130,9 +128,25 @@ launchLoading.setMessage("Starting");
         showErrorDialog("No Version", "Please select a Minecraft version first.");
         return;
     }
+    
+    if (FeatureSettings.getInstance().isLauncherManagedMcLoginEnabled()) {
+        MsftAccountStore.MsftAccount active = getActiveAccount();
+        boolean loggedIn = active != null && active.minecraftUsername != null && !active.minecraftUsername.isEmpty();
+        if (!loggedIn) {
+            mbl2_button.setEnabled(true);
+            new CustomAlertDialog(requireActivity())
+                    .setTitleText(getString(R.string.dialog_title_login_required))
+                    .setMessage(getString(R.string.dialog_message_login_required))
+                    .setPositiveButton(getString(R.string.go_to_accounts), v -> {
+                        startActivity(new Intent(requireActivity(), AccountsActivity.class));
+                    })
+                    .setNegativeButton(getString(R.string.disable_launcher_login_and_continue), null)
+                    .show();
+            return;
+        }
+    }
 
     if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
-        launchLoading.dismiss();
         mbl2_button.setEnabled(true);
         showVersionIsolationDialog();
         return;
@@ -140,40 +154,18 @@ launchLoading.setMessage("Starting");
 
     new Thread(() -> {
         try {
+            Intent launchIntent = requireActivity().getIntent();
             if (FeatureSettings.getInstance().isLauncherManagedMcLoginEnabled()) {
                 MsftAccountStore.MsftAccount active = getActiveAccount();
-                boolean loggedIn = active != null && active.minecraftUsername != null && !active.minecraftUsername.isEmpty();
-
-                if (!loggedIn) {
-    requireActivity().runOnUiThread(() -> {
-        mbl2_button.setEnabled(true));
-    return;
-}
-
-
-                OkHttpClient client = new OkHttpClient();
-                
-                MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.refreshAndAuth(client, active, requireActivity());
-
-                android.util.Pair<String, String> nameAndXuid = MsftAuthManager.fetchMinecraftIdentity(client, xbox.xstsToken());
-                String mUsername = nameAndXuid != null ? nameAndXuid.first : null;
-                String mXuid = nameAndXuid != null ? nameAndXuid.second : null;
-
-                MsftAccountStore.addOrUpdate(requireActivity(), active.msUserId, active.refreshToken, xbox.gamertag(), mUsername, mXuid, xbox.avatarUrl());
-
-
-                requireActivity().runOnUiThread(() -> {
-                    if (listener != null) {
-                        listener.append("""
-            
-Injected: """ + active.minecraftUsername);
-                    }
-                });
+                if (active != null) {
+                    launchIntent.putExtra("MSFT_USERNAME", active.minecraftUsername);
+                    launchIntent.putExtra("MSFT_XUID", active.xuid);
+                }
             }
-
-            minecraftLauncher.launch(requireActivity().getIntent(), version);
+            minecraftLauncher.launch(launchIntent, version);
 
             requireActivity().runOnUiThread(() -> {
+                launchLoading.dismiss();
                 mbl2_button.setEnabled(true);
                 if (listener != null) listener.setText("Minecraft launched successfully");
             });
@@ -611,11 +603,6 @@ if (signInButton != null) {
     }
     
     private void initAccountHeader() {
-    signInButton = getView().findViewById(R.id.signInButton);
-    accountAvatar = getView().findViewById(R.id.accountAvatar);
-    accountAvatarContainer = getView().findViewById(R.id.accountAvatarContainer);
-    avatarProgress = getView().findViewById(R.id.avatarProgress);
-
     if (signInButton != null) {
         signInButton.setOnClickListener(v -> {
             Intent intent = new Intent(requireActivity(), MsftLoginActivity.class);
@@ -623,7 +610,9 @@ if (signInButton != null) {
         });
     }
     if (accountAvatarContainer != null) {
-        accountAvatarContainer.setOnClickListener(v -> showAccountSwitchPopup(v));
+        accountAvatarContainer.setOnClickListener(v -> {
+            startActivity(new Intent(requireActivity(), AccountsActivity.class));
+        });
     }
 }
 
@@ -683,10 +672,4 @@ private void showAccountSwitchPopup(View anchor) {
     Intent intent = new Intent(requireActivity(), AccountsActivity.class);
     startActivity(intent);
   }
-  
-public void setMsftLogin(String username, String xuid) {
-    this.msftUsername = username;
-    this.msftXuid = xuid;
-    Log.d("MinecraftLauncher", "MSFT Login set: " + username);
-}
 }
