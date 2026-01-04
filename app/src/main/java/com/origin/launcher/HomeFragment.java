@@ -156,13 +156,14 @@ OkHttpClient client = new OkHttpClient();
 try {
     MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.refreshAndAuth(client, active, requireActivity());
     if (listener != null) {
-        listener.append("""
-DeviceKey refreshed""");
+        listener.append("\
+DeviceKey refreshed ");
     }
 } catch (Exception e) {
     Log.e("Xelo", "Auth refresh failed", e);
     if (listener != null) {
-        listener.append("""Auth refresh failed""");
+        listener.append("\
+Auth refresh failed");
     }
 }
 
