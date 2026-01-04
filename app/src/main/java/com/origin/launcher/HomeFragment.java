@@ -129,44 +129,55 @@ private void launchGame() {
     if (FeatureSettings.getInstance().isLauncherManagedMcLoginEnabled()) {
     MsftAccountStore.MsftAccount active = getActiveAccount();
     boolean loggedIn = active != null && active.minecraftUsername != null && !active.minecraftUsername.isEmpty();
+    
     if (!loggedIn) {
         mbl2_button.setEnabled(true);
         return;
     }
-    
-    SharedPreferences mcPrefs = requireActivity()
-        .getSharedPreferences("profile_minecraft", Context.MODE_PRIVATE);
+
+    SharedPreferences mcPrefs = requireActivity().getSharedPreferences("profile_minecraft", Context.MODE_PRIVATE);
     mcPrefs.edit()
         .putString("currentUser", active.minecraftUsername)
         .putString("userId", active.xuid)
         .putString("lastVersionId", "net.minecraft.bedrock")
         .putBoolean("demo", false)
         .apply();
-        
-    if (listener != null) {
-        listener.append("""
-            
-Injected: """ + active.minecraftUsername);
-    }
-    
+
     OkHttpClient client = new OkHttpClient();
 accountExecutor.execute(() -> {
     try {
-        MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.refreshAndAuth(client, active, requireActivity());
-        Pair<String, String> nameAndXuid = MsftAuthManager.fetchMinecraftIdentity(client, xbox.xstsToken);
+        MsftAuthManager.XboxAuthResult xbox =
+                MsftAuthManager.refreshAndAuth(client, active, requireActivity());
+
+        Pair<String, String> nameAndXuid =
+                MsftAuthManager.fetchMinecraftIdentity(client, xbox.xstsToken());
+
         String minecraftUsername = nameAndXuid != null ? nameAndXuid.first : null;
         String xuid = nameAndXuid != null ? nameAndXuid.second : null;
-        
-        MsftAccountStore.addOrUpdate(requireActivity(), active.msUserId, active.refreshToken, xbox.gamertag, minecraftUsername, xuid, xbox.avatarUrl);
-        
-        coelho.msftauth.api.xbox.XboxDeviceKey deviceKey = new coelho.msftauth.api.xbox.XboxDeviceKey(requireActivity());
-        com.origin.launcher.auth.storage.XalStorageManager.saveDeviceIdentity(requireActivity(), active.msUserId, deviceKey);
-        
-        Log.d("Xelo", "Full Xelo login + DeviceKey");
+
+        MsftAccountStore.addOrUpdate(
+                requireActivity(),
+                active.msUserId,
+                active.refreshToken,
+                xbox.gamertag(),
+                minecraftUsername,
+                xuid,
+                xbox.avatarUrl()
+        );
+
+        XboxDeviceKey deviceKey = new XboxDeviceKey(requireActivity());
+        XalStorageManager.saveDeviceIdentity(requireActivity(), active.msUserId, deviceKey);
+
+        Log.d("Xelo", "Auth synced with Minecraft successfully");
     } catch (Exception e) {
-        Log.e("Xelo", "Xelo login failed", e);
+        Log.e("Xelo", "Background auth failed", e);
     }
 });
+    
+    if (listener != null) {
+        listener.append("
+Injected: " + active.minecraftUsername);
+    }
 }
 
     if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
