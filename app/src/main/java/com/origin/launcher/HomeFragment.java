@@ -150,16 +150,14 @@ private void launchGame() {
     listener.append("""
         *** Injected: """ + active.minecraftUsername);
   }
-}
-
 OkHttpClient client = new OkHttpClient();
 try {
     MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.refreshAndAuth(client, active, requireActivity());
-    Log.d("Xelo", "DeviceKey refreshed ✓");
+    Log.d("Xelo", "DeviceKey refreshed ");
 } catch (Exception e) {
     Log.e("Xelo", "Auth refresh failed", e);
+  }
 }
-
     if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
         mbl2_button.setEnabled(true);
         showVersionIsolationDialog();
