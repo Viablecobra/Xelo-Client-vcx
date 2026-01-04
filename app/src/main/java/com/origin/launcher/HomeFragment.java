@@ -144,21 +144,18 @@ private void launchGame() {
     if (listener != null) {
     listener.append("""
         
-*** Injected: """ + active.minecraftUsername);
+Injected: """ + active.minecraftUsername);
 }
     
     OkHttpClient client = new OkHttpClient();
 try {
-    OAuth20Token token = new OAuth20Token(
-        "", System.currentTimeMillis() / 1000L, 
-        active.refreshToken, "", "", "", ""
-    );
-    MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.performXboxAuth(client, token, requireActivity());
+    MsftAuthManager.XboxAuthResult xbox = MsftAuthManager.refreshAndAuth(client, active, requireActivity());
+    
     coelho.msftauth.api.xbox.XboxDeviceKey deviceKey = new coelho.msftauth.api.xbox.XboxDeviceKey(requireActivity());
     com.origin.launcher.auth.storage.XalStorageManager.saveDeviceIdentity(requireActivity(), active.msUserId, deviceKey);
-    Log.d("Xelo", "XBL Auth + DeviceKey saved");
+    Log.d("Xelo", "XBL refresh auth saved");
 } catch (Exception e) {
-    Log.e("Xelo", "XBL Auth failed", e);
+    Log.e("Xelo", "Refresh auth failed", e);
 }
 }
 
