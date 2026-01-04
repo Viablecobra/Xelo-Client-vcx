@@ -86,6 +86,7 @@ import com.origin.launcher.auth.MsftAccountStore;
 import com.origin.launcher.auth.storage.XalStorageManager;
  
  import com.origin.launcher.R;
+ import com.origin.launcher.LoadingDialog;
 
 public class HomeFragment extends BaseThemedFragment {
 
@@ -117,15 +118,21 @@ public class HomeFragment extends BaseThemedFragment {
 private void launchGame() {
     if (mbl2_button == null) return;
     mbl2_button.setEnabled(false);
+    
+    LoadingDialog launchLoading = new LoadingDialog(requireActivity());
+launchLoading.show();
+launchLoading.setMessage("Starting");
 
     GameVersion version = versionManager != null ? versionManager.getSelectedVersion() : null;
     if (version == null) {
+        launchLoading.dismiss();
         mbl2_button.setEnabled(true);
         showErrorDialog("No Version", "Please select a Minecraft version first.");
         return;
     }
 
     if (!version.isInstalled && !FeatureSettings.getInstance().isVersionIsolationEnabled()) {
+        launchLoading.dismiss();
         mbl2_button.setEnabled(true);
         showVersionIsolationDialog();
         return;
@@ -138,9 +145,12 @@ private void launchGame() {
                 boolean loggedIn = active != null && active.minecraftUsername != null && !active.minecraftUsername.isEmpty();
 
                 if (!loggedIn) {
-                    requireActivity().runOnUiThread(() -> mbl2_button.setEnabled(true));
-                    return;
-                }
+    requireActivity().runOnUiThread(() -> {
+        launchLoading.dismiss();
+        mbl2_button.setEnabled(true);
+    });
+    return;
+}
 
 
                 OkHttpClient client = new OkHttpClient();
@@ -162,6 +172,7 @@ Injected: """ + active.minecraftUsername);
                     }
                 });
             }
+            launchLoading.dismiss();
 
             minecraftLauncher.launch(requireActivity().getIntent(), version);
 
@@ -172,6 +183,7 @@ Injected: """ + active.minecraftUsername);
         } catch (Exception e) {
             Log.e("Xelo", "Launch failed", e);
             requireActivity().runOnUiThread(() -> {
+                launchLoading.dismiss();
                 mbl2_button.setEnabled(true);
                 showErrorDialog("Launch Failed", e.getMessage());
             });
