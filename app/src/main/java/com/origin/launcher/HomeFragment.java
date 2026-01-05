@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.content.pm.PackageManager;
 import androidx.core.content.FileProvider;
 import android.util.Pair;
@@ -32,6 +33,8 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import org.json.JSONObject;
+import org.json.JSONArray;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -112,8 +115,22 @@ public class HomeFragment extends BaseThemedFragment {
     for (MsftAccountStore.MsftAccount a : list) if (a.active) return a;
     return null;
 }
-    
+
 private void launchGame() {
+    MsftAccountStore.MsftAccount active = getActiveAccount();
+    if (active != null) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
+        prefs.edit()
+            .putString("currentUser", active.minecraftUsername)
+            .putString("userId", active.xuid)
+            .apply();
+        XboxDeviceKey deviceKey = XboxDeviceKey.restoreKeyAndId(requireActivity());
+if (deviceKey != null) {
+    XalStorageManager.getInstance(requireActivity())
+        .saveDeviceIdentity(deviceKey.getProofKey());
+}
+    }
+
     if (mbl2_button == null) return;
     mbl2_button.setEnabled(false);
     
@@ -130,7 +147,6 @@ private void launchGame() {
     }
     
     if (FeatureSettings.getInstance().isLauncherManagedMcLoginEnabled()) {
-        MsftAccountStore.MsftAccount active = getActiveAccount();
         boolean loggedIn = active != null && active.minecraftUsername != null && !active.minecraftUsername.isEmpty();
         if (!loggedIn) {
             mbl2_button.setEnabled(true);
@@ -156,7 +172,6 @@ private void launchGame() {
         try {
             Intent launchIntent = requireActivity().getIntent();
             if (FeatureSettings.getInstance().isLauncherManagedMcLoginEnabled()) {
-                MsftAccountStore.MsftAccount active = getActiveAccount();
                 if (active != null) {
                     launchIntent.putExtra("MSFT_USERNAME", active.minecraftUsername);
                     launchIntent.putExtra("MSFT_XUID", active.xuid);
@@ -288,6 +303,12 @@ public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceStat
     checkResourcepack();
     
 // account manager
+
+XboxDeviceKey deviceKey = XboxDeviceKey.restoreKeyAndId(requireActivity());
+    if (deviceKey != null) {
+        XalStorageManager.getInstance(requireActivity())
+            .saveDeviceIdentity(deviceKey.getProofKey());
+    }
 
 accountLoginLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
