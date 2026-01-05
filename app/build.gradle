@@ -75,6 +75,7 @@ android {
         ]
         
     resources.pickFirsts += [
+    "META-INF/DEPENDENCIES",
                 "META-INF/io.netty.versions.properties"
         ]
     
@@ -83,7 +84,6 @@ android {
         pickFirst '**/libxcrash.so'
         pickFirst '**/libxcrash_dumper.so'
 
-        exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE'
