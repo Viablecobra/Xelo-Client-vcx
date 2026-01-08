@@ -130,10 +130,7 @@ public class InbuiltModsCustomizeActivity extends BaseThemedActivity implements 
         adapterRecyclerView.setAdapter(adapter);
 
         emptyAdapterText = new TextView(this);
-        emptyAdapterText.setText("No mods enabled
-
-Add mods from the
-main menu first");
+        emptyAdapterText.setText(R.string.no_mods_enabled);
         emptyAdapterText.setTextSize(16);
         emptyAdapterText.setTextColor(Color.WHITE);
         emptyAdapterText.setGravity(Gravity.CENTER);

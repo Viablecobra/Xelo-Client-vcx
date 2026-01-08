@@ -82,5 +82,9 @@
 <string name="dialog_negative_cancel">Cancel</string>
 <string name="dialog_title_launch_failed">Launch Failed</string>
 <string name="dialog_message_launch_failed">Error: %1$s</string>
+<string name="no_mods_enabled">No mods enabled
+
+Add mods from the
+main menu first</string>
 
 </resources>
