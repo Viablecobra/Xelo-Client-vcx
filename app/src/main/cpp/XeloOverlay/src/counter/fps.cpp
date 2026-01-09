@@ -82,7 +82,7 @@ static bool hookEglSwapBuffers() {
 extern "C" {
 
 JNIEXPORT jboolean JNICALL
-Java_com_origin_launcher_Launcher_inbuilt_XeloOverlay_nativemod_FPSMod_nativeInit(JNIEnv* env, jclass clazz) {
+Java_com_origin_launcher_Launcher_inbuilt_XeloOverlay_nativemod_FpsMod_nativeInit(JNIEnv* env, jclass clazz) {
     if (g_initialized) {
         return JNI_TRUE;
     }
