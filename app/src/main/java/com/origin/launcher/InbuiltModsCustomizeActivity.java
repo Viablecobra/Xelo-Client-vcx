@@ -210,6 +210,16 @@ adapterContainer.layout(0, 0, adapterContainer.getMeasuredWidth(), adapterContai
         }
 
         adapter.submitList(getEnabledMods());
+        
+        InbuiltModManager manager = InbuiltModManager.getInstance(this);
+        if (manager.isModAdded(ModIds.ZOOM)) {
+            int savedZoom = manager.getZoomLevel();
+            if (savedZoom > 0) {
+                modZoomLevels.put(ModIds.ZOOM, savedZoom);
+            } else {
+                modZoomLevels.put(ModIds.ZOOM, 100);
+            }
+        }
 
         customizeButton.setOnClickListener(v -> {
             boolean show = !isAdapterVisible;
