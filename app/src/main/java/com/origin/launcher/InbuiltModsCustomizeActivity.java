@@ -210,16 +210,6 @@ adapterContainer.layout(0, 0, adapterContainer.getMeasuredWidth(), adapterContai
         }
 
         adapter.submitList(getEnabledMods());
-        
-        InbuiltModManager manager = InbuiltModManager.getInstance(this);
-        if (manager.isModAdded(ModIds.ZOOM)) {
-            int savedZoom = manager.getZoomLevel();
-            if (savedZoom > 0) {
-                modZoomLevels.put(ModIds.ZOOM, savedZoom);
-            } else {
-                modZoomLevels.put(ModIds.ZOOM, 100);
-            }
-        }
 
         customizeButton.setOnClickListener(v -> {
             boolean show = !isAdapterVisible;
@@ -303,6 +293,14 @@ bottomButtons.animate().translationX(-slide).setDuration(duration).start();
             list.add(new InbuiltCustomizeAdapter.Item(ModIds.CAMERA_PERSPECTIVE, R.drawable.ic_camera));
         if (manager.isModAdded(ModIds.ZOOM))
             list.add(new InbuiltCustomizeAdapter.Item(ModIds.ZOOM, R.drawable.ic_zoom));
+            if (manager.isModAdded(ModIds.ZOOM)) {
+            int savedZoom = manager.getZoomLevel();
+            if (savedZoom > 0) {
+                modZoomLevels.put(ModIds.ZOOM, savedZoom);
+            } else {
+                modZoomLevels.put(ModIds.ZOOM, 100);
+            }
+        }
 
         return list;
     }
