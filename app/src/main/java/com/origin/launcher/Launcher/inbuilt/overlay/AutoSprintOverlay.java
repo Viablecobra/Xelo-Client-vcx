@@ -42,8 +42,7 @@ public class AutoSprintOverlay extends BaseOverlayButton {
         if (overlayView != null) {
             ImageButton btn = overlayView.findViewById(R.id.mod_overlay_button);
             if (btn != null) {
-                float userOpacity = getButtonOpacity();
-                btn.setAlpha(userOpacity);
+                btn.setAlpha(active ? 1.0f : 0.6f);
                 btn.setBackgroundResource(
                         active ? R.drawable.bg_overlay_button_active
                                : R.drawable.bg_overlay_button
