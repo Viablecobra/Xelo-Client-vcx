@@ -1,6 +1,7 @@
 package com.origin.launcher.Launcher.inbuilt.overlay;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,7 +17,7 @@ import android.widget.TextView;
 
 import com.origin.launcher.R;
 import com.origin.launcher.Launcher.inbuilt.model.ModIds;
-import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModManager;
+import com.origin.launcher.Launcher.inbuilt.manager.InbuiltModSizeStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,9 +27,11 @@ public class CpsDisplayOverlay {
     private static final int UPDATE_INTERVAL = 100;
     private static final double CPS_WINDOW = 1.0;
     private static final float DRAG_THRESHOLD = 10f;
+    private static final String MOD_ID = ModIds.CPS_DISPLAY;
 
     private final Activity activity;
     private final WindowManager windowManager;
+    private final InbuiltModSizeStore sizeStore;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final List<Double> clickTimes = new ArrayList<>();
 
@@ -56,7 +59,9 @@ public class CpsDisplayOverlay {
 
     public CpsDisplayOverlay(Activity activity) {
         this.activity = activity;
-        this.windowManager = (WindowManager) activity.getSystemService(Activity.WINDOW_SERVICE);
+        this.windowManager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+        this.sizeStore = InbuiltModSizeStore.getInstance();
+        sizeStore.init(activity.getApplicationContext());
         setupGameInputListener();
     }
 
@@ -114,9 +119,14 @@ public class CpsDisplayOverlay {
             statsText = overlayView.findViewById(R.id.stats_text);
             statsText.setText("CPS: 0");
 
+            int sizeDp = sizeStore.getSize(MOD_ID);
+            float scale = sizeStore.getScale(MOD_ID);
+            int widthPx = dpToPx(sizeDp);
+            int heightPx = dpToPx((int)(sizeDp * 0.6f));
+
             wmParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                (int)(widthPx * scale),
+                (int)(heightPx * scale),
                 WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -124,14 +134,16 @@ public class CpsDisplayOverlay {
                 PixelFormat.TRANSLUCENT
             );
             wmParams.gravity = Gravity.TOP | Gravity.START;
-            wmParams.x = startX;
-            wmParams.y = startY;
+            float savedX = sizeStore.getPositionX(MOD_ID);
+            float savedY = sizeStore.getPositionY(MOD_ID);
+            wmParams.x = savedX >= 0 ? (int)savedX : startX;
+            wmParams.y = savedY >= 0 ? (int)savedY : startY;
             wmParams.token = activity.getWindow().getDecorView().getWindowToken();
 
+            overlayView.setAlpha(sizeStore.getOpacity(MOD_ID) / 100f);
             overlayView.setOnTouchListener(this::handleTouch);
             windowManager.addView(overlayView, wmParams);
             isShowing = true;
-
             handler.post(updateRunnable);
         } catch (Exception e) {
             showFallback(startX, startY);
@@ -147,19 +159,26 @@ public class CpsDisplayOverlay {
         statsText = overlayView.findViewById(R.id.stats_text);
         statsText.setText("CPS: 0");
 
+        int sizeDp = sizeStore.getSize(MOD_ID);
+        float scale = sizeStore.getScale(MOD_ID);
+        int widthPx = dpToPx(sizeDp);
+        int heightPx = dpToPx((int)(sizeDp * 0.6f));
+
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
+            (int)(widthPx * scale),
+            (int)(heightPx * scale)
         );
         params.gravity = Gravity.TOP | Gravity.START;
-        params.leftMargin = startX;
-        params.topMargin = startY;
+        float savedX = sizeStore.getPositionX(MOD_ID);
+        float savedY = sizeStore.getPositionY(MOD_ID);
+        params.leftMargin = savedX >= 0 ? (int)savedX : startX;
+        params.topMargin = savedY >= 0 ? (int)savedY : startY;
 
+        overlayView.setAlpha(sizeStore.getOpacity(MOD_ID) / 100f);
         overlayView.setOnTouchListener(this::handleTouchFallback);
         rootView.addView(overlayView, params);
         isShowing = true;
         wmParams = null;
-
         handler.post(updateRunnable);
     }
 
@@ -170,6 +189,8 @@ public class CpsDisplayOverlay {
     }
 
     private boolean handleTouch(View v, MotionEvent event) {
+        if (sizeStore.isLocked(MOD_ID)) return false;
+
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 initialX = wmParams.x;
@@ -193,6 +214,10 @@ public class CpsDisplayOverlay {
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (isDragging) {
+                    sizeStore.setPositionX(MOD_ID, (float)wmParams.x);
+                    sizeStore.setPositionY(MOD_ID, (float)wmParams.y);
+                }
                 isDragging = false;
                 return true;
         }
@@ -200,6 +225,8 @@ public class CpsDisplayOverlay {
     }
 
     private boolean handleTouchFallback(View v, MotionEvent event) {
+        if (sizeStore.isLocked(MOD_ID)) return false;
+
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) overlayView.getLayoutParams();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -224,10 +251,18 @@ public class CpsDisplayOverlay {
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (isDragging) {
+                    sizeStore.setPositionX(MOD_ID, (float)params.leftMargin);
+                    sizeStore.setPositionY(MOD_ID, (float)params.topMargin);
+                }
                 isDragging = false;
                 return true;
         }
         return false;
+    }
+
+    private int dpToPx(int dp) {
+        return (int)(dp * activity.getResources().getDisplayMetrics().density);
     }
 
     public void hide() {
