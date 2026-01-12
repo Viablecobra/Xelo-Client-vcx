@@ -219,6 +219,11 @@
             android:exported="false"
             android:theme="@style/Theme.Material3.Dark.NoActionBar.Custom"
             android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+    android:name=".AutoFixActivity"
+    android:exported="false"
+    android:theme="@style/Base.Theme.FullScreen" />
 
     </application>
 </manifest>

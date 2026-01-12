@@ -7,6 +7,10 @@ public class FeatureSettings {
     private static Context appContext;
     private boolean versionIsolationEnabled = false;
     private boolean logcatOverlayEnabled = false;
+    
+    public native void setAutofixVersions(String[] versions);
+    public native void setLightmapAutofixer(boolean enabled);
+    public native void setTextureLodAutofixer(boolean enabled);
 
     public enum StorageType {
         INTERNAL,

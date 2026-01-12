@@ -66,6 +66,10 @@ public class ConfigurationFragment extends BaseThemedFragment {
                         } catch (Throwable ignored) {}
                     }
             );
+        addSwitchItem("Lightmap Autofix", true, (btn, checked) -> fs.setLightmapAutofixer(checked));
+    addSwitchItem("Texture LOD Autofix", true, (btn, checked) -> fs.setTextureLodAutofixer(checked));
+    addActionButton("Autofix Versions", "Select Versions", v -> startActivity(new Intent(requireContext(), AutoFixActivity.class)));
+    
         }));
 
         settingsRecyclerView.post(() ->
