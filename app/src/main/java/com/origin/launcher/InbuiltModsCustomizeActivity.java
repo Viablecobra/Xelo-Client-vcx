@@ -380,6 +380,12 @@ public void showKeybindDialog(String modId) {
     builder.setNegativeButton(R.string.dialog_negative_cancel, null);
 
     AlertDialog dialog = builder.create();
+    
+    GradientDrawable strokeBg = new GradientDrawable();
+    strokeBg.setColor(getResources().getColor(R.color.black, null));
+    strokeBg.setStroke(dpToPx(1), getResources().getColor(R.color.white, null));
+    strokeBg.setCornerRadius(dpToPx(16));
+    dialog.getWindow().setBackgroundDrawable(strokeBg);
     dialog.setOnKeyListener((d, keyCode, event) -> {
     if (event.getAction() == KeyEvent.ACTION_DOWN) {
         if (!isKeyboardKey(keyCode)) return true;
