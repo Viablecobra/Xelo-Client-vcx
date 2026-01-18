@@ -38,7 +38,6 @@ class GamePackageManager private constructor(private val context: Context, priva
         "libPlayFabMultiplayer.so",
         "libxelo.so",
         "libmtbinloader2.so",
-        "libmtbinloader2.so",
     )
 
     init {
