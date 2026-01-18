@@ -152,7 +152,6 @@ if (!shouldLoadPlayFab(version)) {
                 }
                 ModNativeLoader.loadEnabledSoMods(ModManager.getInstance(), context.getCacheDir());
                 
-                XeloMod.loadLibrary();
 
                 activity.runOnUiThread(() -> {
                     dismissLoading();
