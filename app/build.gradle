@@ -55,7 +55,7 @@ repositories {
     beta {
         initWith debug
         applicationIdSuffix ".beta"
-        signingConfig signingConfigs.debug
+        matchingFallbacks = ['debug']  
         versionNameSuffix "-beta"
     }
 }

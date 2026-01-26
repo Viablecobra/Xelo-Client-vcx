@@ -75,7 +75,6 @@ jobs:
           if-no-files-found: ignore
 
   beta-build:
-    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     env:
       JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
