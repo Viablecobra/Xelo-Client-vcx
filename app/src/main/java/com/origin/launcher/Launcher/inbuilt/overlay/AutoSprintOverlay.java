@@ -23,7 +23,7 @@ public class AutoSprintOverlay extends BaseOverlayButton {
 
     @Override
     protected int getIconResource() {
-        return R.drawable.ic_sprint;
+        return R.drawable.ic_sprint_selector;
     }
 
     @Override
@@ -42,6 +42,7 @@ public class AutoSprintOverlay extends BaseOverlayButton {
         if (overlayView != null) {
             ImageButton btn = overlayView.findViewById(R.id.mod_overlay_button);
             if (btn != null) {
+                btn.setActivated(active);
                 btn.setAlpha(active ? 1.0f : 0.6f);
                 btn.setBackgroundResource(
                         active ? R.drawable.bg_overlay_button_active
