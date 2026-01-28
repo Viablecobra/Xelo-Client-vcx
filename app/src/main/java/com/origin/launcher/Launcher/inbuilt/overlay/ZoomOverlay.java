@@ -28,7 +28,7 @@ public class ZoomOverlay extends BaseOverlayButton {
 
     @Override
     protected int getIconResource() {
-        return R.drawable.ic_zoom;
+        return R.drawable.ic_zoom_selector;
     }
 
     @Override
@@ -112,6 +112,7 @@ public class ZoomOverlay extends BaseOverlayButton {
     private void updateButtonState(boolean active) {
         if (overlayView instanceof ImageButton) {
             ImageButton btn = (ImageButton) overlayView;
+            btn.setActivated(active);
             btn.setAlpha(active ? 1.0f : 0.6f);
             btn.setBackgroundResource(active ? R.drawable.bg_overlay_button_active : R.drawable.bg_overlay_button);
         }

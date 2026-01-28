@@ -46,12 +46,19 @@ repositories {
 
 
     buildTypes {
-        release {
-            minifyEnabled false
-            shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+    release {
+        minifyEnabled false
+        shrinkResources false
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
+    
+    beta {
+    initWith release
+    applicationIdSuffix ".beta"
+    matchingFallbacks = ["release"]
+    versionNameSuffix "-beta"
+    }
+}
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
